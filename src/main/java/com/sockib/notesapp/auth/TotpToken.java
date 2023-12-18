@@ -12,8 +12,7 @@ import java.util.List;
 public final class TotpToken extends AbstractAuthenticationToken {
 
     private static final List<GrantedAuthority> USER_GRANTED_AUTHORITIES = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-
-    private TotpCredentials totpCredentials;
+    private final TotpCredentials totpCredentials;
 
     public TotpToken(String username, String password, String totp) {
         super(USER_GRANTED_AUTHORITIES);
