@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "users")
-public class User {
+public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +17,6 @@ public class User {
     private String email;
     private String password;
 
-    private String salt;
     private String totpSecret;
     private Boolean isVerified = false;
 

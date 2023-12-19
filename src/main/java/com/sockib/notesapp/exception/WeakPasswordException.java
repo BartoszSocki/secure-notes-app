@@ -1,10 +1,16 @@
 package com.sockib.notesapp.exception;
 
-public class WeakPasswordException extends Exception {
-    public WeakPasswordException() {
-    }
+import lombok.Getter;
 
-    public WeakPasswordException(String message) {
-        super(message);
+import java.util.List;
+
+@Getter
+public class WeakPasswordException extends Exception {
+
+    private final List<String> failMessages;
+
+    public WeakPasswordException(List<String> failMessages) {
+        super(failMessages.stream().reduce(String::concat).orElse(""));
+        this.failMessages = failMessages;
     }
 }

@@ -1,35 +1,43 @@
 package com.sockib.notesapp.auth;
 
-import com.sockib.notesapp.model.entity.User;
+import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
-import com.sockib.notesapp.service.impl.Totp;
+import com.sockib.notesapp.service.TotpService;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
 
-//    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final TotpService totpService;
+
+    public TotpAuthenticationProvider(UserRepository userRepository, TotpService totpService, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        super(passwordEncoder);
+        this.userRepository = userRepository;
+        this.totpService = totpService;
+        this.setUserDetailsService(userDetailsService);
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String clientTotp = ((TotpAuthenticationDetails) authentication.getDetails()).getCode();
-        User user = userRepository.findVerifiedUserByEmail(authentication.getName())
+        AppUser appUser = userRepository.findVerifiedUserByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        String secret = user.getTotpSecret();
-        String serverTotp = Totp.generateTOTP256(secret, "", "6");
+        String serverTotp = totpService.generateTotpCode(appUser.getTotpSecret());
 
         if (!serverTotp.equals(clientTotp)) {
             throw new BadCredentialsException("Invalid credentials");
         }
 
         Authentication result = super.authenticate(authentication);
-        return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(appUser, result.getCredentials(), result.getAuthorities());
     }
 
     @Override

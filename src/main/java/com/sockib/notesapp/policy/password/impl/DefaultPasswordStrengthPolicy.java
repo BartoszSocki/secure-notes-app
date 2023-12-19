@@ -6,7 +6,7 @@ import com.sockib.notesapp.policy.password.rule.*;
 
 import java.util.List;
 
-public class PasswordStrengthPolicyImpl implements PasswordStrengthPolicy {
+public class DefaultPasswordStrengthPolicy implements PasswordStrengthPolicy {
 
     private static final List<PasswordRule> RULES = List.of(
             new PasswordLowerCaseLetterRule(),

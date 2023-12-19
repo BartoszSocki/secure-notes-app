@@ -5,7 +5,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
-import com.sockib.notesapp.model.entity.User;
+import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.TotpService;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.hc.core5.net.URIBuilder;
@@ -21,9 +21,7 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -70,10 +68,10 @@ public class TotpServiceImpl implements TotpService {
     }
 
     @Override
-    public Optional<String> generateTotpQrCode(User user) {
-        String secret = user.getTotpSecret();
+    public Optional<String> generateTotpQrCode(AppUser appUser) {
+        String secret = appUser.getTotpSecret();
         String issuer = ISSUER;
-        String account = user.getEmail();
+        String account = appUser.getEmail();
 
         String url = generateAuthenticationUrl(secret, issuer, account);
         Optional<String> png = generateTotpQrCode(url);
@@ -82,7 +80,8 @@ public class TotpServiceImpl implements TotpService {
     }
 
     @Override
-    public String generateTotpCode(String secretKey, long counter) {
+    public String generateTotpCode(String secretKey) {
+        long counter = Instant.now().getEpochSecond() / 30;
         Base32 base32 = new Base32();
         byte[] keyBytes = base32.decode(secretKey);
         byte[] counterBytes = ByteBuffer.allocate(8).putLong(counter).array();

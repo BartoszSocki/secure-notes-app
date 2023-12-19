@@ -1,19 +1,34 @@
 package com.sockib.notesapp.config;
 
 import com.sockib.notesapp.auth.TotpAuthenticationDetailsSource;
+import com.sockib.notesapp.auth.TotpAuthenticationProvider;
+import com.sockib.notesapp.model.repository.UserRepository;
+import com.sockib.notesapp.service.TotpService;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.stereotype.Controller;
 
-@Controller
+@Configuration
 public class WebConfig {
 
-    // TODO: make it a bean
-    final TotpAuthenticationDetailsSource totpAuthenticationDetailsSource = new TotpAuthenticationDetailsSource();
+    final UserRepository userRepository;
+    final TotpService totpService;
+    final UserDetailsService userDetailsService;
+
+    public WebConfig(UserRepository userRepository, TotpService totpService, UserDetailsService userDetailsService) {
+        this.userRepository = userRepository;
+        this.totpService = totpService;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -22,25 +37,64 @@ public class WebConfig {
                 .cors(x -> x.disable())
                 .sessionManagement(x -> x
                         .invalidSessionUrl("/login?error=invalid_session")
-                        .sessionFixation(y -> y.changeSessionId())
+//                        .sessionFixation(y -> y.changeSessionId())
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .formLogin(x -> x
                         .loginPage("/login")
-                        .successForwardUrl("/dashboard")
-                        .authenticationDetailsSource(totpAuthenticationDetailsSource)
+                        .defaultSuccessUrl("/dashboard")
+                        .authenticationDetailsSource(totpAuthenticationDetailsSource())
                 )
                 .authorizeHttpRequests(x -> x
-                        .requestMatchers("/register").permitAll()
-                        .requestMatchers("/auth-test").authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/register", "/register-totp", "/register-confirm").permitAll()
+                        .requestMatchers("/css/**", "/js/**").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .build();
     }
 
     @Bean
     PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+        final int SALT_LENGTH = 16;
+        final int HASH_LENGTH = 32;
+        final int PARALLELISM = 1;
+        final int MEMORY = 19456; // 19MiB
+        final int ITERATIONS = 2;
+
+        Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(
+                SALT_LENGTH,
+                HASH_LENGTH,
+                PARALLELISM,
+                MEMORY,
+                ITERATIONS
+        );
+        return argon2PasswordEncoder;
+    }
+
+    @Bean
+    AuthenticationProvider totpAuthenticationProvider() {
+         DaoAuthenticationProvider authenticationProvider = new TotpAuthenticationProvider(
+                 userRepository,
+                 totpService,
+                 userDetailsService,
+                 passwordEncoder()
+         );
+
+         return authenticationProvider;
+    }
+
+    @Bean
+    AuthenticationManager authenticationManager() {
+        AuthenticationManager authenticationManager = new ProviderManager(totpAuthenticationProvider());
+
+        return authenticationManager;
+    }
+
+    @Bean
+    TotpAuthenticationDetailsSource totpAuthenticationDetailsSource() {
+        return new TotpAuthenticationDetailsSource();
     }
 
 }

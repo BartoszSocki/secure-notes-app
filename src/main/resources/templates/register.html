@@ -2,6 +2,7 @@
 <html xmlns:th="https://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
+    <link th:href="@{css/main.css}" rel="stylesheet" />
     <title>Sign Up</title>
 </head>
 <body>
@@ -18,65 +19,32 @@
 
     <label for="password-repeated">password repeated</label>
     <input type="password" id="password-repeated" autocomplete="false" th:field="*{passwordRepeated}"/>
+
+    <ul>
+        <li th:each="error: ${failMessages}" th:text="${error}" />
+    </ul>
+
     <input type="submit" value="Sign Up" />
 </form>
 </body>
 <style>
-    * {
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-        font-family: sans-serif;
-    }
-
-    form {
+    ul {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    label {
-        font-size: 1.5rem;
-    }
-
-    body {
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        align-items: center;
-        justify-content: center;
-    }
-
-    a {
-        font-size: 2rem;
-    }
-
-    input[type="submit"] {
-        margin-top: 2rem;
-
-        width: 20rem;
-        height: 3rem;
+        gap: 0.25rem;
+        list-style: none;
+        border: 4px solid red;
         border-radius: 8px;
-        border: 4px solid black;
-        font-size: 2rem;
-        background: #4a4aff;
-        color: white;
+        padding: 1rem;
+        background: #f5cece;
     }
 
-    input[type="submit"]:hover {
-        background: #2424d9;
+    ul:empty {
+        display: none;
     }
 
-    input[type="text"],
-    input[type="password"] {
-        width: 20rem;
-        height: 3rem;
-        font-size: 2rem;
-        border-radius: 8px;
-        border: 4px solid black;
-        padding: 8px;
+    li {
+        text-transform: capitalize;
     }
 </style>
 </html>

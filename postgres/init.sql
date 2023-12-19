@@ -6,7 +6,6 @@ create table if not exists users
     email       text not null,
     username    text null,
     password    text null,
-    salt        text null,
     totp_secret text null,
     is_verified boolean default false
 );

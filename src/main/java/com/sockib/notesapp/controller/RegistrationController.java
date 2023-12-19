@@ -3,7 +3,7 @@ package com.sockib.notesapp.controller;
 import com.sockib.notesapp.exception.*;
 import com.sockib.notesapp.model.dto.TotpCodeDto;
 import com.sockib.notesapp.model.dto.UserRegistrationDto;
-import com.sockib.notesapp.model.entity.User;
+import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.RegistrationService;
 import com.sockib.notesapp.service.impl.TotpServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class RegistrationController {
 
     final RegistrationService registrationService;
-    // TODO: add interface
     final TotpServiceImpl totpService;
 
     public RegistrationController(RegistrationService registrationService, TotpServiceImpl totpService) {
@@ -34,10 +33,11 @@ public class RegistrationController {
     @PostMapping("/register")
     String registerNewUser(UserRegistrationDto userRegistrationDto,
                            RedirectAttributes redirectAttributes,
-                           HttpServletRequest request) {
+                           HttpServletRequest request,
+                           Model model) {
         try {
-            User user = registrationService.registerNewUser(userRegistrationDto);
-            request.getSession().setAttribute("user", user);
+            AppUser appUser = registrationService.registerNewUser(userRegistrationDto);
+            request.getSession().setAttribute("user", appUser);
 
             return "redirect:/register-totp";
         } catch (PasswordMismatchException e) {
@@ -48,6 +48,7 @@ public class RegistrationController {
             return "redirect:/register";
         } catch (WeakPasswordException e) {
             redirectAttributes.addAttribute("error", "weak_password");
+            redirectAttributes.addFlashAttribute("failMessages", e.getFailMessages());
             return "redirect:/register";
         }
     }
@@ -55,12 +56,12 @@ public class RegistrationController {
     @GetMapping("/register-totp")
     String totpRegistrationPage(Model model,
                                 HttpServletRequest request) {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        AppUser appUser = (AppUser) request.getSession().getAttribute("user");
+        if (appUser == null) {
             throw new RegistrationException();
         }
 
-        String totpQrCode = totpService.generateTotpQrCode(user).orElseThrow();
+        String totpQrCode = totpService.generateTotpQrCode(appUser).orElseThrow();
         TotpCodeDto totpCodeDto = new TotpCodeDto();
 
         model.addAttribute("totpCodeDto", totpCodeDto);
@@ -78,10 +79,10 @@ public class RegistrationController {
     String totpRegistrationConfirm(TotpCodeDto totpCodeDto,
                                    RedirectAttributes redirectAttributes,
                                    HttpServletRequest request) {
-        User user = (User) request.getSession().getAttribute("user");
+        AppUser appUser = (AppUser) request.getSession().getAttribute("user");
 
         try {
-            registrationService.confirmUserRegistration(user.getId(), totpCodeDto);
+            registrationService.confirmUserRegistration(appUser.getId(), totpCodeDto);
         } catch (RegistrationException e) {
             request.getSession().invalidate();
             redirectAttributes.addAttribute("error", "registration_failed");

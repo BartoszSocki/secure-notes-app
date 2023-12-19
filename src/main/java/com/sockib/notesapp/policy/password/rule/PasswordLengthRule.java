@@ -6,9 +6,19 @@ import java.util.List;
 
 public class PasswordLengthRule implements PasswordRule {
 
-    public static final int MIN_SIZE = 8;
-    public static final int MAX_SIZE = 32;
-    public final static List<String> FAIL_MESSAGES = List.of("password must be between 12 and 32 characters");
+    public final int MIN_SIZE;
+    public final int MAX_SIZE;
+    public final List<String> FAIL_MESSAGES;
+
+    public PasswordLengthRule() {
+        this(8, 64);
+    }
+
+    public PasswordLengthRule(int minSize, int maxSize) {
+        this.MAX_SIZE = maxSize;
+        this.MIN_SIZE = minSize;
+        this.FAIL_MESSAGES = List.of("password must be between " + MIN_SIZE +  " and " + MAX_SIZE + " characters");
+    }
 
     @Override
     public PasswordStrengthResult match(String password) {

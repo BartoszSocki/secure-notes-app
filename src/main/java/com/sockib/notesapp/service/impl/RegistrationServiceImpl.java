@@ -3,11 +3,12 @@ package com.sockib.notesapp.service.impl;
 import com.sockib.notesapp.exception.*;
 import com.sockib.notesapp.model.dto.TotpCodeDto;
 import com.sockib.notesapp.model.dto.UserRegistrationDto;
-import com.sockib.notesapp.model.entity.User;
+import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
 import com.sockib.notesapp.policy.password.PasswordStrengthResult;
-import com.sockib.notesapp.policy.password.impl.PasswordStrengthPolicyImpl;
+import com.sockib.notesapp.policy.password.impl.DefaultPasswordStrengthPolicy;
+import com.sockib.notesapp.policy.password.impl.EntropyPasswordStrengthPolicy;
 import com.sockib.notesapp.service.RegistrationService;
 import com.sockib.notesapp.service.TotpService;
 import jakarta.transaction.Transactional;
@@ -16,8 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.time.Instant;
-import java.util.Base64;
 
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
@@ -30,10 +29,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final TotpService totpService;
 
     private static final int TOTP_SHARED_SECRET_LENGTH = 16;
-    private static final int SALT_LENGTH = 16;
 
     public RegistrationServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, TotpService totpService) {
-        this.passwordStrengthPolicy = new PasswordStrengthPolicyImpl();
+//        this.passwordStrengthPolicy = new PasswordStrengthPolicyImpl();
+        this.passwordStrengthPolicy = PasswordStrengthPolicy.combine(new EntropyPasswordStrengthPolicy(), new DefaultPasswordStrengthPolicy());
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.secureRandom = new SecureRandom();
@@ -43,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public User registerNewUser(UserRegistrationDto userRegistrationDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException {
+    public AppUser registerNewUser(UserRegistrationDto userRegistrationDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException {
         boolean doesUserAlreadyExists = userRepository.findVerifiedUserByEmail(userRegistrationDto.getEmail()).isPresent();
         if (doesUserAlreadyExists) {
             throw new UserAlreadyExistsException();
@@ -56,47 +55,41 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         PasswordStrengthResult passwordStrength = passwordStrengthPolicy.getStrength(userRegistrationDto.getPassword());
         if (!passwordStrength.isStrong()) {
-            throw new WeakPasswordException();
+            throw new WeakPasswordException(passwordStrength.getFailMessages());
         }
 
         // create unverified user
-        User user = saveNewUser(userRegistrationDto);
-        return user;
+        AppUser appUser = saveNewUser(userRegistrationDto);
+        return appUser;
     }
 
     @Override
     public void confirmUserRegistration(Long userId, TotpCodeDto totpCodeDto) throws RegistrationException {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RegistrationException("user not found"));
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new RegistrationException("user not found"));
 
-        String serverTotpCode = totpService.generateTotpCode(user.getTotpSecret(), Instant.now().getEpochSecond() / 30);
+        String serverTotpCode = totpService.generateTotpCode(appUser.getTotpSecret());
         String clientTotpCode = totpCodeDto.getCode();
 
         if (serverTotpCode == null || !serverTotpCode.equals(clientTotpCode)) {
             throw new TotpCodeException();
         }
 
-        user.setIsVerified(true);
-        userRepository.save(user);
+        appUser.setIsVerified(true);
+        userRepository.save(appUser);
     }
 
-    private User saveNewUser(UserRegistrationDto userRegistrationDto) {
-        String salt = generateSalt();
+    private AppUser saveNewUser(UserRegistrationDto userRegistrationDto) {
         String totpSecret = generateTotpSecret();
 
-        String encodedPassword = passwordEncoder.encode(salt + userRegistrationDto.getPassword());
-        User user = new User();
-        user.setEmail(userRegistrationDto.getEmail());
-        user.setUsername(userRegistrationDto.getUsername());
-        user.setPassword(encodedPassword);
-        user.setSalt(salt);
-        user.setTotpSecret(totpSecret);
-        user.setIsVerified(false);
+        String encodedPassword = passwordEncoder.encode(userRegistrationDto.getPassword());
+        AppUser appUser = new AppUser();
+        appUser.setEmail(userRegistrationDto.getEmail());
+        appUser.setUsername(userRegistrationDto.getUsername());
+        appUser.setPassword(encodedPassword);
+        appUser.setTotpSecret(totpSecret);
+        appUser.setIsVerified(false);
 
-        return userRepository.save(user);
-    }
-
-    private String byteArrayToBase64String(byte[] bytes) {
-        return Base64.getEncoder().encodeToString(bytes);
+        return userRepository.save(appUser);
     }
 
     private String byteArrayToBase32String(byte[] bytes) {
@@ -107,12 +100,6 @@ public class RegistrationServiceImpl implements RegistrationService {
         byte[] totpSecret = new byte[TOTP_SHARED_SECRET_LENGTH];
         secureRandom.nextBytes(totpSecret);
         return byteArrayToBase32String(totpSecret);
-    }
-
-    private String generateSalt() {
-        byte[] salt = new byte[SALT_LENGTH];
-        secureRandom.nextBytes(salt);
-        return byteArrayToBase64String(salt);
     }
 
 }
