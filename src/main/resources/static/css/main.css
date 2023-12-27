@@ -32,8 +32,9 @@ a {
 input[type="submit"] {
     margin-top: 2rem;
 
-    width: 20rem;
-    height: 3rem;
+    /*width: 20rem;*/
+    /*height: 3rem;*/
+    padding: 0.3rem;
     border-radius: 8px;
     border: 4px solid black;
     font-size: 2rem;
@@ -47,10 +48,31 @@ input[type="submit"]:hover {
 
 input[type="text"],
 input[type="password"] {
-    width: 20rem;
-    height: 3rem;
+    /*width: 20rem;*/
     font-size: 2rem;
     border-radius: 8px;
     border: 4px solid black;
     padding: 8px;
+}
+
+textarea {
+    font-size: 2rem;
+    border-radius: 8px;
+    border: 4px solid black;
+    padding: 8px;
+}
+
+fieldset {
+    border: none;
+    display: flex;
+    flex-direction: column;
+}
+
+legend {
+    font-size: 1.5rem;
+}
+
+*:disabled {
+    color: gray;
+    border-color: gray !important;
 }

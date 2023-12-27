@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
@@ -24,15 +25,17 @@ public class NoteController {
     @GetMapping("/add")
     String getAddNewNotePage(Model model) {
         model.addAttribute("noteFormDto", new NoteFormDto());
-        return "note-new";
+        return "note-add";
     }
 
-    @PostMapping
-    String addNewNote(NoteFormDto noteFormDto, Principal principal) {
-        AppUser user = (AppUser) principal;
+    @PostMapping("/add")
+    String addNewNote(NoteFormDto noteFormDto, Principal principal, RedirectAttributes redirectAttributes) {
+//        AppUser user = (AppUser) principal;
 
-        noteService.addNote(user.getId(), noteFormDto);
-        return "redirect:/dashboard?success";
+//        noteService.addNote(user.getId(), noteFormDto);
+
+        redirectAttributes.addAttribute("success", "successfully added new note");
+        return "redirect:/dashboard";
     }
 
 }
