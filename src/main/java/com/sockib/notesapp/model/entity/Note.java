@@ -16,6 +16,7 @@ public class Note {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
+    private String title;
     private byte[] content;
     private Boolean isEncrypted = false;
     private Boolean isPublished = false;
