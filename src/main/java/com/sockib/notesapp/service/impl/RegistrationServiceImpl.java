@@ -53,7 +53,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new PasswordMismatchException();
         }
 
-        PasswordStrengthResult passwordStrength = passwordStrengthPolicy.getStrength(userRegistrationDto.getPassword());
+        PasswordStrengthResult passwordStrength = passwordStrengthPolicy.evaluate(userRegistrationDto.getPassword());
         if (!passwordStrength.isStrong()) {
             throw new WeakPasswordException(passwordStrength.getFailMessages());
         }

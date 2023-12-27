@@ -15,7 +15,7 @@ public class EntropyPasswordStrengthPolicy implements PasswordStrengthPolicy {
     }
 
     @Override
-    public PasswordStrengthResult getStrength(String password) {
+    public PasswordStrengthResult evaluate(String password) {
         Strength strength = zxcvbn.measure(password);
 
         PasswordStrengthResult passwordStrengthResult = new PasswordStrengthResult(isStrongEnough(strength), strength.getFeedback().getSuggestions());

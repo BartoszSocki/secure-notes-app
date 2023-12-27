@@ -8,20 +8,20 @@ import java.util.List;
 
 public class DefaultPasswordStrengthPolicy implements PasswordStrengthPolicy {
 
-    private static final List<PasswordRule> RULES = List.of(
-            new PasswordLowerCaseLetterRule(),
-            new PasswordUpperCaseLetterRule(),
-            new PasswordSpecialCharacterRule(),
-            new PasswordNumberRule(),
-            new PasswordLengthRule()
+    private static final List<PasswordStrengthPolicy> POLICIES = List.of(
+            new PasswordLowerCaseLetterPolicy(),
+            new PasswordUpperCaseLetterPolicy(),
+            new PasswordSpecialCharacterPolicy(),
+            new PasswordNumberPolicy(),
+            new PasswordLengthPolicy()
     );
 
-    private static final PasswordRule RULE = RULES.stream()
-            .reduce(new PasswordEmptyRule(), PasswordRule::combine);
+    private static final PasswordStrengthPolicy POLICY = POLICIES.stream()
+            .reduce(new EmptyPolicy(), PasswordStrengthPolicy::combine);
 
     @Override
-    public PasswordStrengthResult getStrength(String password) {
-        return RULE.match(password);
+    public PasswordStrengthResult evaluate(String password) {
+        return POLICY.evaluate(password);
     }
 
 }
