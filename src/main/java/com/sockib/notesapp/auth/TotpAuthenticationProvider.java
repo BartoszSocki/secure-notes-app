@@ -30,11 +30,10 @@ public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
         AppUser appUser = userRepository.findVerifiedUserByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
-        String serverTotp = totpService.generateTotpCode(appUser.getTotpSecret());
-
-        if (!serverTotp.equals(clientTotp)) {
-            throw new BadCredentialsException("Invalid credentials");
-        }
+//        String serverTotp = totpService.generateTotpCode(appUser.getTotpSecret());
+//        if (!serverTotp.equals(clientTotp)) {
+//            throw new BadCredentialsException("Invalid credentials");
+//        }
 
         Authentication result = super.authenticate(authentication);
         return new UsernamePasswordAuthenticationToken(appUser, result.getCredentials(), result.getAuthorities());

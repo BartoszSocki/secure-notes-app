@@ -13,4 +13,12 @@ public class NoteFormDto {
     private Boolean isEncrypted;
     private String encryptionPassword;
 
+    public NoteFormDto() {
+        this.title = "";
+        this.content = "";
+        this.isPublished = false;
+        this.isEncrypted = false;
+        this.encryptionPassword = "";
+    }
+
 }

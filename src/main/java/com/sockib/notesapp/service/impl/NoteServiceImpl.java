@@ -25,8 +25,10 @@ public class NoteServiceImpl implements NoteService {
     private final NoteRepository noteRepository;
     private final NoteEncryptionService noteEncryptionService;
 
-    public NoteServiceImpl(NoteRepository noteRepository, NoteEncryptionService noteEncryptionService) {
-        this.passwordStrengthPolicy = PasswordStrengthPolicy.combine(new EntropyPasswordStrengthPolicy(), new DefaultPasswordStrengthPolicy());
+    public NoteServiceImpl(PasswordStrengthPolicy passwordStrengthPolicy,
+                           NoteRepository noteRepository,
+                           NoteEncryptionService noteEncryptionService) {
+        this.passwordStrengthPolicy = passwordStrengthPolicy;
         this.noteContentPolicy = new NoteContentPolicy();
         this.noteTitlePolicy = new NoteTitlePolicy();
         this.noteRepository = noteRepository;

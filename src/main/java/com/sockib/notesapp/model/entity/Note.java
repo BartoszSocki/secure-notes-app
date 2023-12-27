@@ -8,9 +8,9 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
+@Entity(name = "note")
 public class Note {
 
     @Id

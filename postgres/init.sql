@@ -15,10 +15,10 @@ create table if not exists note
     id               int generated always as identity not null primary key,
     title            text                             not null,
     content          text                             null,
-    
+
     encoded_password text                             null,
-    salt             varbit(128)                      null,
-    iv               varbit(128)                      null,
+    salt             bytea                            null,
+    iv               bytea                            null,
 
     is_encrypted     boolean default false,
     is_published     boolean default false

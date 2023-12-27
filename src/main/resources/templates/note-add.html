@@ -10,20 +10,20 @@
 
 <form action="#" th:action="@{/note/add}" th:object="${noteFormDto}" method="POST" autocomplete="off">
     <label for="title">Title</label>
-    <input id="title" type="text" name="title" placeholder="Title..." th:field="*{title}">
+    <input id="title" type="text" name="title" placeholder="Title..." th:value="*{title}" th:field="*{title}">
 
     <label for="note">Note</label>
-    <textarea rows="5" id="note" placeholder="Note..." th:field="*{content}"></textarea>
+    <textarea rows="5" id="note" placeholder="Note..." th:value="*{content}" th:field="*{content}"></textarea>
 
     <fieldset>
         <legend>publish note?</legend>
         <span>
-            <input type="radio" id="publish-choice-yes" name="publish" value="true" th:field="*{isPublished}"/>
+            <input type="radio" id="publish-choice-yes" name="publish" value="true" th:checked="*{isPublished}" th:field="*{isPublished}"/>
             <label for="publish-choice-yes">Yes</label>
         </span>
 
         <span>
-            <input type="radio" id="publish-choice-no" name="publish" value="false" checked th:field="*{isPublished}"/>
+            <input type="radio" id="publish-choice-no" name="publish" value="false" th:checked="*{isPublished}" th:field="*{isPublished}"/>
             <label for="publish-choice-no">No</label>
         </span>
     </fieldset>

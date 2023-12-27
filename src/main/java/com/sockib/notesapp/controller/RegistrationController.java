@@ -33,8 +33,7 @@ public class RegistrationController {
     @PostMapping("/register")
     String registerNewUser(UserRegistrationDto userRegistrationDto,
                            RedirectAttributes redirectAttributes,
-                           HttpServletRequest request,
-                           Model model) {
+                           HttpServletRequest request) {
         try {
             AppUser appUser = registrationService.registerNewUser(userRegistrationDto);
             request.getSession().setAttribute("user", appUser);

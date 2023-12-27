@@ -3,6 +3,10 @@ package com.sockib.notesapp.config;
 import com.sockib.notesapp.auth.TotpAuthenticationDetailsSource;
 import com.sockib.notesapp.auth.TotpAuthenticationProvider;
 import com.sockib.notesapp.model.repository.UserRepository;
+import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
+import com.sockib.notesapp.policy.password.impl.DefaultPasswordStrengthPolicy;
+import com.sockib.notesapp.policy.password.impl.EntropyPasswordStrengthPolicy;
+import com.sockib.notesapp.policy.password.rule.EmptyPolicy;
 import com.sockib.notesapp.service.TotpService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,6 +76,16 @@ public class WebConfig {
         );
 
         return argon2PasswordEncoder;
+    }
+
+//    @Bean
+//    PasswordStrengthPolicy passwordStrengthPolicy() {
+//        return PasswordStrengthPolicy.combine(new EntropyPasswordStrengthPolicy(), new DefaultPasswordStrengthPolicy());
+//    }
+
+    @Bean
+    PasswordStrengthPolicy passwordStrengthPolicy() {
+        return new EmptyPolicy();
     }
 
     @Bean

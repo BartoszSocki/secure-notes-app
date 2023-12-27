@@ -21,7 +21,7 @@ import java.util.Base64;
 public class NoteEncryptionServiceImpl implements NoteEncryptionService {
 
     private final PasswordEncoder passwordEncoder;
-    private final static  int ITERATIONS = 300_000;
+    private final static int ITERATIONS = 300_000;
     private final static String ALGORITHM = "AES/GCM/PKCS5Padding";
 
     public NoteEncryptionServiceImpl(PasswordEncoder passwordEncoder) {
