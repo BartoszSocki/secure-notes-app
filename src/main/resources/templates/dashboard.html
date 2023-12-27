@@ -2,14 +2,14 @@
 <html xmlns:th="https://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <link th:href="@{css/main.css}" rel="stylesheet" />
+    <link th:href="@{/css/main.css}" rel="stylesheet" />
     <title>Dashboard</title>
 </head>
 <body>
 <h1>Dashboard</h1>
 <ul>
-    <li><a th:href="@{/note/list}">notes</a></li>
-    <li><a th:href="@{/note/add}">notes</a></li>
+    <li><a th:href="@{/dashboard/note/list}">Note List</a></li>
+    <li><a th:href="@{/dashboard/note/add}">Add Note</a></li>
 </ul>
 </body>
 </html>

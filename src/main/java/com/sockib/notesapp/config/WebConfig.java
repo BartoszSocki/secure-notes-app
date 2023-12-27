@@ -36,9 +36,9 @@ public class WebConfig {
                 .csrf(x -> x.disable())
                 .cors(x -> x.disable())
                 .sessionManagement(x -> x
-                        .invalidSessionUrl("/login?error=invalid_session")
+                                .invalidSessionUrl("/login?error=invalid_session")
 //                        .sessionFixation(y -> y.changeSessionId())
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .formLogin(x -> x
                         .loginPage("/login")
@@ -70,6 +70,7 @@ public class WebConfig {
                 MEMORY,
                 ITERATIONS
         );
+
         return argon2PasswordEncoder;
     }
 

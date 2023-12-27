@@ -1,5 +1,6 @@
 package com.sockib.notesapp.model.entity;
 
+import com.sockib.notesapp.model.embeddable.NoteContent;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,7 +18,7 @@ public class Note {
     private String id;
 
     private String title;
-    private byte[] content;
+    private NoteContent noteContent;
     private Boolean isEncrypted = false;
     private Boolean isPublished = false;
 

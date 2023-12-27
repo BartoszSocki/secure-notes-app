@@ -1,9 +1,8 @@
 package com.sockib.notesapp.policy.note;
 
-import lombok.Getter;
 import org.owasp.html.*;
 
-public class NoteContentPolicy {
+public class NoteContentPolicy implements Sanitizer {
 
     private final PolicyFactory policyFactory;
 
@@ -15,6 +14,7 @@ public class NoteContentPolicy {
                 .and(Sanitizers.STYLES);
     }
 
+    @Override
     public String sanitize(String text) {
         return policyFactory.sanitize(text);
     }
