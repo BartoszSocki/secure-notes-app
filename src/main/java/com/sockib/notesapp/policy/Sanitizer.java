@@ -1,4 +1,4 @@
-package com.sockib.notesapp.policy.note;
+package com.sockib.notesapp.policy;
 
 public interface Sanitizer {
 

@@ -1,12 +1,13 @@
 package com.sockib.notesapp.policy.note;
 
+import com.sockib.notesapp.policy.Sanitizer;
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
 
-public class NoteTitlePolicy implements Sanitizer {
+public class NoteTitleSanitizer implements Sanitizer {
     private final PolicyFactory policyFactory;
 
-    public NoteTitlePolicy() {
+    public NoteTitleSanitizer() {
         this.policyFactory = new HtmlPolicyBuilder().toFactory();
     }
     @Override

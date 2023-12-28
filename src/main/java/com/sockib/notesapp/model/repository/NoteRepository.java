@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface NoteRepository extends JpaRepository<Note, String> {
+public interface NoteRepository extends JpaRepository<Note, Long> {
 
     @Query("SELECT n FROM Note n WHERE n.user.id = :userId")
     List<Note> findUserNotes(Long userId);

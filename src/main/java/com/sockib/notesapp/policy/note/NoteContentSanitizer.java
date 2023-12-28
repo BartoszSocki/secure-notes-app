@@ -1,12 +1,13 @@
 package com.sockib.notesapp.policy.note;
 
+import com.sockib.notesapp.policy.Sanitizer;
 import org.owasp.html.*;
 
-public class NoteContentPolicy implements Sanitizer {
+public class NoteContentSanitizer implements Sanitizer {
 
     private final PolicyFactory policyFactory;
 
-    public NoteContentPolicy() {
+    public NoteContentSanitizer() {
         this.policyFactory = Sanitizers.BLOCKS
                 .and(Sanitizers.FORMATTING)
                 .and(Sanitizers.IMAGES)

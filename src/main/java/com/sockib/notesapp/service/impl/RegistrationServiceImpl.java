@@ -1,14 +1,14 @@
 package com.sockib.notesapp.service.impl;
 
 import com.sockib.notesapp.exception.*;
-import com.sockib.notesapp.model.dto.TotpCodeDto;
+import com.sockib.notesapp.model.dto.TotpCodeFormDto;
 import com.sockib.notesapp.model.dto.UserRegistrationDto;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
 import com.sockib.notesapp.policy.password.PasswordStrengthResult;
-import com.sockib.notesapp.policy.password.impl.DefaultPasswordStrengthPolicy;
-import com.sockib.notesapp.policy.password.impl.EntropyPasswordStrengthPolicy;
+import com.sockib.notesapp.policy.user.EmailValidator;
+import com.sockib.notesapp.policy.user.UsernameValidator;
 import com.sockib.notesapp.service.RegistrationService;
 import com.sockib.notesapp.service.TotpService;
 import jakarta.transaction.Transactional;
@@ -27,27 +27,40 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final SecureRandom secureRandom;
     private final Base32 base32Encoder;
     private final TotpService totpService;
+    private final UsernameValidator usernameValidator;
+    private final EmailValidator emailValidator;
 
     private static final int TOTP_SHARED_SECRET_LENGTH = 16;
 
     public RegistrationServiceImpl(PasswordStrengthPolicy passwordStrengthPolicy,
                                    UserRepository userRepository,
                                    PasswordEncoder passwordEncoder,
-                                   TotpService totpService) {
+                                   TotpService totpService,
+                                   UsernameValidator usernameValidator) {
         this.passwordStrengthPolicy = passwordStrengthPolicy;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.secureRandom = new SecureRandom();
         this.base32Encoder = new Base32();
         this.totpService = totpService;
+        this.usernameValidator = usernameValidator;
+        this.emailValidator = new EmailValidator();
     }
 
     @Override
     @Transactional
-    public AppUser registerNewUser(UserRegistrationDto userRegistrationDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException {
+    public AppUser registerNewUser(UserRegistrationDto userRegistrationDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException, InvalidUsernameException, InvalidEmailException {
         boolean doesUserAlreadyExists = userRepository.findVerifiedUserByEmail(userRegistrationDto.getEmail()).isPresent();
         if (doesUserAlreadyExists) {
             throw new UserAlreadyExistsException();
+        }
+
+        if (!usernameValidator.isUsernameValid(userRegistrationDto.getUsername())) {
+            throw new InvalidUsernameException();
+        }
+
+        if (!emailValidator.isEmailValid(userRegistrationDto.getEmail())) {
+            throw new InvalidEmailException();
         }
 
         boolean arePasswordsTheSame = (userRegistrationDto.getPassword() != null) && userRegistrationDto.getPassword().equals(userRegistrationDto.getPasswordRepeated());
@@ -66,7 +79,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public void confirmUserRegistration(Long userId, TotpCodeDto totpCodeDto) throws RegistrationException {
+    public void confirmUserRegistration(Long userId, TotpCodeFormDto totpCodeDto) throws RegistrationException {
         AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new RegistrationException("user not found"));
 
         String serverTotpCode = totpService.generateTotpCode(appUser.getTotpSecret());

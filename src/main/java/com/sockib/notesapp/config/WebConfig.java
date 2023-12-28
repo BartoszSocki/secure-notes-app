@@ -4,9 +4,8 @@ import com.sockib.notesapp.auth.TotpAuthenticationDetailsSource;
 import com.sockib.notesapp.auth.TotpAuthenticationProvider;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
-import com.sockib.notesapp.policy.password.impl.DefaultPasswordStrengthPolicy;
-import com.sockib.notesapp.policy.password.impl.EntropyPasswordStrengthPolicy;
 import com.sockib.notesapp.policy.password.rule.EmptyPolicy;
+import com.sockib.notesapp.policy.user.UsernameValidator;
 import com.sockib.notesapp.service.TotpService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,6 +85,11 @@ public class WebConfig {
     @Bean
     PasswordStrengthPolicy passwordStrengthPolicy() {
         return new EmptyPolicy();
+    }
+
+    @Bean
+    UsernameValidator usernameValidator() {
+        return new UsernameValidator();
     }
 
     @Bean

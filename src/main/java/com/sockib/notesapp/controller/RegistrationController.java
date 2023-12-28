@@ -1,7 +1,7 @@
 package com.sockib.notesapp.controller;
 
 import com.sockib.notesapp.exception.*;
-import com.sockib.notesapp.model.dto.TotpCodeDto;
+import com.sockib.notesapp.model.dto.TotpCodeFormDto;
 import com.sockib.notesapp.model.dto.UserRegistrationDto;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.RegistrationService;
@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 public class RegistrationController {
@@ -30,6 +32,7 @@ public class RegistrationController {
         return "register";
     }
 
+    // TODO: add validation
     @PostMapping("/register")
     String registerNewUser(UserRegistrationDto userRegistrationDto,
                            RedirectAttributes redirectAttributes,
@@ -40,14 +43,19 @@ public class RegistrationController {
 
             return "redirect:/register-totp";
         } catch (PasswordMismatchException e) {
-            redirectAttributes.addAttribute("error", "passwords_mismatch");
+            redirectAttributes.addFlashAttribute("failMessages", List.of("password mismatch"));
             return "redirect:/register";
         } catch (UserAlreadyExistsException e) {
-            redirectAttributes.addAttribute("error", "user_exists");
+            redirectAttributes.addFlashAttribute("failMessages", List.of("user already exists"));
             return "redirect:/register";
         } catch (WeakPasswordException e) {
-            redirectAttributes.addAttribute("error", "weak_password");
             redirectAttributes.addFlashAttribute("failMessages", e.getFailMessages());
+            return "redirect:/register";
+        } catch (InvalidUsernameException e) {
+            redirectAttributes.addFlashAttribute("failMessages", List.of("invalid username"));
+            return "redirect:/register";
+        } catch (InvalidEmailException e) {
+            redirectAttributes.addFlashAttribute("failMessages", List.of("invalid email"));
             return "redirect:/register";
         }
     }
@@ -57,41 +65,43 @@ public class RegistrationController {
                                 HttpServletRequest request) {
         AppUser appUser = (AppUser) request.getSession().getAttribute("user");
         if (appUser == null) {
-            throw new RegistrationException();
+            return "redirect:/register";
         }
 
         String totpQrCode = totpService.generateTotpQrCode(appUser).orElseThrow();
-        TotpCodeDto totpCodeDto = new TotpCodeDto();
 
-        model.addAttribute("totpCodeDto", totpCodeDto);
+        model.addAttribute("totpCodeDto", new TotpCodeFormDto());
         model.addAttribute("totpQr", totpQrCode);
         return "register-totp";
     }
 
     @GetMapping("/register-confirm")
     String totpConfirmPage(Model model) {
-        model.addAttribute("totpCodeDto", new TotpCodeDto());
+        model.addAttribute("totpCodeDto", new TotpCodeFormDto());
         return "register-confirm";
     }
 
     @PostMapping("/register-confirm")
-    String totpRegistrationConfirm(TotpCodeDto totpCodeDto,
+    String totpRegistrationConfirm(TotpCodeFormDto totpCodeDto,
                                    RedirectAttributes redirectAttributes,
                                    HttpServletRequest request) {
         AppUser appUser = (AppUser) request.getSession().getAttribute("user");
+        if (appUser == null) {
+            return "redirect:/register";
+        }
 
         try {
             registrationService.confirmUserRegistration(appUser.getId(), totpCodeDto);
         } catch (RegistrationException e) {
             request.getSession().invalidate();
-            redirectAttributes.addAttribute("error", "registration_failed");
+            redirectAttributes.addFlashAttribute("failMessages", List.of("registration fail"));
             return "redirect:/register";
         } catch (TotpCodeException e) {
-            redirectAttributes.addAttribute("error", "invalid_totp");
+            redirectAttributes.addFlashAttribute("failMessages", List.of("bad totp code"));
             return "redirect:/register-confirm";
         }
 
-        redirectAttributes.addAttribute("status", "registration_success");
+        redirectAttributes.addFlashAttribute("successMessages", List.of("successful registration"));
         return "redirect:/login";
     }
 
