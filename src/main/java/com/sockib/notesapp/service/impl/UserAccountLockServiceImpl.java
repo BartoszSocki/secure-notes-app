@@ -5,7 +5,6 @@ import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.UserAccountLockService;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,8 +14,9 @@ import java.util.Optional;
 
 public class UserAccountLockServiceImpl implements UserAccountLockService {
 
-    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(1, ChronoUnit.DAYS);
-    public static final int DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS = 3;
+//    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(1, ChronoUnit.DAYS);
+    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(2, ChronoUnit.MINUTES);
+    public static final int DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS = 2;
 
     private final Duration accountLockDuration;
     private final int maxAccountFailedLoginAttempts;
@@ -32,19 +32,6 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
         this(DEFAULT_ACCOUNT_LOCK_DURATION, DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS, userRepository);
     }
 
-    private AppUser lockAccount(AppUser user) {
-        user.setAccountNonLocked(user.getFailedAttempt() < maxAccountFailedLoginAttempts);
-        user.setLockTime(LocalDateTime.now());
-        return user;
-    }
-
-    private AppUser unlockAccount(AppUser user) {
-        user.setAccountNonLocked(true);
-        user.setLockTime(LocalDateTime.of(1970, 1, 1, 0, 0));
-        user.setFailedAttempt(0);
-        return user;
-    }
-
     private boolean canAccountBeUnlocked(AppUser user) {
         int userLockStartInMillis = user.getLockTime().getNano() / 1000;
         int now = Instant.now().getNano() / 1000;
@@ -54,23 +41,41 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
 
     @Override
     @Transactional
-    public void updateAccountLockState(String email, boolean wasAuthenticationSuccessful) {
+    public boolean lockAccount(String email) {
         Optional<AppUser> possibleUser = userRepository.findVerifiedUserByEmail(email);
 
-        // TODO: fix this shit
         if (possibleUser.isEmpty()) {
-            return;
+            return false;
         }
 
         AppUser user = possibleUser.get();
-        if (!wasAuthenticationSuccessful) {
+
+        if (user.isAccountNonLocked()) {
             user.setFailedAttempt(user.getFailedAttempt() + 1);
-            userRepository.save(lockAccount(user));
+            user.setAccountNonLocked(user.getFailedAttempt() < maxAccountFailedLoginAttempts);
+            user.setLockTime(LocalDateTime.now());
+            userRepository.save(user);
+            return !user.isAccountNonLocked();
         }
 
         if (canAccountBeUnlocked(user)) {
-            userRepository.save(unlockAccount(user));
+            user.setAccountNonLocked(true);
+            user.setLockTime(LocalDateTime.of(1970, 1, 1, 0, 0));
+            user.setFailedAttempt(0);
+            userRepository.save(user);
+            return false;
         }
+
+        return true;
+    }
+
+    @Override
+    public void resetFailedLoginAttempts(String email) {
+        AppUser user = userRepository.findVerifiedUserByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        user.setAccountNonLocked(true);
+        user.setLockTime(LocalDateTime.of(1970, 1, 1, 0, 0));
+        user.setFailedAttempt(0);
+        userRepository.save(user);
     }
 
 }

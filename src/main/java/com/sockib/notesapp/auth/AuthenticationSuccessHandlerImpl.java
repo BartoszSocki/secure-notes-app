@@ -2,6 +2,7 @@ package com.sockib.notesapp.auth;
 
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.UserAccountLockService;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,15 +15,15 @@ public class AuthenticationSuccessHandlerImpl extends SimpleUrlAuthenticationSuc
 
     private final UserAccountLockService userAccountLockService;
 
-    public AuthenticationSuccessHandlerImpl(UserAccountLockService userAccountLockService, String defaultTargetUrl) {
-        super(defaultTargetUrl);
+    public AuthenticationSuccessHandlerImpl(UserAccountLockService userAccountLockService) {
+        super();
         this.userAccountLockService = userAccountLockService;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         AppUser user = (AppUser) authentication.getPrincipal();
-        userAccountLockService.updateAccountLockState(user.getEmail(), true);
+        userAccountLockService.resetFailedLoginAttempts(user.getEmail());
 
         super.onAuthenticationSuccess(request, response, authentication);
     }

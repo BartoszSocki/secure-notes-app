@@ -8,6 +8,10 @@
 <body>
     <h1>Login</h1>
 
+    <ul class="success-messages" th:if="${successMessages}">
+        <li th:each="success: ${successMessages}" th:text="${success}" />
+    </ul>
+
     <form action="#" th:action="@{/login}" th:object="${loginFormDto}" method="POST" autocomplete="off">
         <label for="username">username</label>
         <input type="text" id="username" autocomplete="false" th:field="*{username}"/>
@@ -20,6 +24,11 @@
 
         <input type="submit" value="submit">
     </form>
+
+    <ul class="fail-messages" th:if="${param.error}">
+        <li th:text="${param.message}" />
+    </ul>
+
 <a th:href="@{/register}">Sign Up</a>
 </body>
 </html>

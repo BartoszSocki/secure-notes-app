@@ -2,6 +2,7 @@ package com.sockib.notesapp.service;
 
 public interface UserAccountLockService {
 
-    void updateAccountLockState(String email, boolean wasAuthenticationSuccessful);
+    boolean lockAccount(String email);
+    void resetFailedLoginAttempts(String email);
 
 }

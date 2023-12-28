@@ -5,6 +5,7 @@ import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.TotpService;
 import org.hibernate.IdentifierLoadAccess;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -37,12 +38,14 @@ public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String clientTotp = ((TotpAuthenticationDetails) authentication.getDetails()).getCode();
         AppUser appUser = userRepository.findVerifiedUserByEmail(authentication.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
 //        String serverTotp = totpService.generateTotpCode(appUser.getTotpSecret());
 //        if (!serverTotp.equals(clientTotp)) {
 //            throw new BadCredentialsException("Invalid credentials");
 //        }
+
+        loginDelay();
 
         Authentication result = super.authenticate(authentication);
         return new UsernamePasswordAuthenticationToken(appUser, result.getCredentials(), result.getAuthorities());
