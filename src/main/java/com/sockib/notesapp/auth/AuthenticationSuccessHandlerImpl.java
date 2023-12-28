@@ -2,7 +2,6 @@ package com.sockib.notesapp.auth;
 
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.UserAccountLockService;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +24,7 @@ public class AuthenticationSuccessHandlerImpl extends SimpleUrlAuthenticationSuc
         AppUser user = (AppUser) authentication.getPrincipal();
         userAccountLockService.resetFailedLoginAttempts(user.getEmail());
 
-        super.onAuthenticationSuccess(request, response, authentication);
+        getRedirectStrategy().sendRedirect(request, response, "/dashboard");
     }
 
 }

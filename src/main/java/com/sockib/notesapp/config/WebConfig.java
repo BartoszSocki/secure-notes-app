@@ -1,6 +1,7 @@
 package com.sockib.notesapp.config;
 
 import com.sockib.notesapp.auth.AuthenticationFailureHandlerImpl;
+import com.sockib.notesapp.auth.AuthenticationSuccessHandlerImpl;
 import com.sockib.notesapp.auth.TotpAuthenticationDetailsSource;
 import com.sockib.notesapp.auth.TotpAuthenticationProvider;
 import com.sockib.notesapp.model.repository.UserRepository;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -55,6 +57,7 @@ public class WebConfig {
                         .defaultSuccessUrl("/dashboard")
                         .authenticationDetailsSource(totpAuthenticationDetailsSource())
                         .failureHandler(authenticationFailureHandler())
+                        .successHandler(successAuthenticationHandler())
                 )
                 .authorizeHttpRequests(x -> x
                         .requestMatchers("/login").permitAll()
@@ -73,6 +76,11 @@ public class WebConfig {
     @Bean
     AuthenticationFailureHandler authenticationFailureHandler() {
         return new AuthenticationFailureHandlerImpl(userAccountLockService(), "/login?error");
+    }
+
+    @Bean
+    AuthenticationSuccessHandler successAuthenticationHandler() {
+        return new AuthenticationSuccessHandlerImpl(userAccountLockService());
     }
 
     @Bean

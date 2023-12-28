@@ -5,10 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NoteDto {
+public class NotePasswordFormDto {
 
-    private long id;
-    private String title;
-    private String content;
+    private String password;
 
 }

@@ -1,12 +1,16 @@
 package com.sockib.notesapp.controller;
 
+import com.sockib.notesapp.exception.InvalidPasswordException;
 import com.sockib.notesapp.exception.NoteException;
 import com.sockib.notesapp.exception.WeakPasswordException;
 import com.sockib.notesapp.model.dto.NoteDto;
 import com.sockib.notesapp.model.dto.NoteFormDto;
+import com.sockib.notesapp.model.dto.NotePasswordFormDto;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.entity.Note;
+import com.sockib.notesapp.service.NoteEncryptionService;
 import com.sockib.notesapp.service.NoteService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,14 +32,16 @@ import java.util.Optional;
 public class NoteController {
 
     private final NoteService noteService;
+    private final NoteEncryptionService noteEncryptionService;
 
-    public NoteController(NoteService noteService) {
+    public NoteController(NoteService noteService, NoteEncryptionService noteEncryptionService) {
         this.noteService = noteService;
+        this.noteEncryptionService = noteEncryptionService;
     }
 
     @GetMapping("/add")
     String getAddNewNotePage(Model model) {
-        if (model.containsAttribute("noteFormDto")) {
+        if (!model.containsAttribute("noteFormDto")) {
             model.addAttribute("noteFormDto", new NoteFormDto());
         }
 
@@ -47,7 +53,7 @@ public class NoteController {
                       RedirectAttributes redirectAttributes,
                       @AuthenticationPrincipal AppUser user) {
         try {
-            Note note = noteService.addNote(user.getId(), noteFormDto);
+            noteService.addNote(user.getId(), noteFormDto);
         } catch (WeakPasswordException e) {
             noteFormDto.setEncryptionPassword("");
             redirectAttributes.addFlashAttribute("noteFormDto", noteFormDto);
@@ -73,20 +79,36 @@ public class NoteController {
         return "note-list";
     }
 
+    @GetMapping("/{noteId}/view")
+    String noteViewPage(@PathVariable Long noteId,
+                        Model model) {
+        if (!model.containsAttribute("noteDto")) {
+            return String.format("redirect:/note/%d", noteId);
+        }
+
+        return "note";
+    }
+
     @GetMapping("/{noteId}")
     String notePage(@PathVariable Long noteId,
-                    Model model,
                     RedirectAttributes redirectAttributes,
                     @AuthenticationPrincipal AppUser user) {
         Note note = noteService.getNote(noteId).orElseThrow();
         boolean isOwner = Objects.equals(user.getId(), note.getUser().getId());
+        boolean isOwnerAndNotEncrypted = isOwner && !note.getIsEncrypted();
+        boolean isPublished = note.getIsPublished();
 
-        if (isOwner || note.getIsPublished()) {
-            model.addAttribute("note", note);
-            return "note";
+        if (isOwnerAndNotEncrypted || isPublished) {
+            NoteDto noteDto = new NoteDto();
+            noteDto.setId(note.getId());
+            noteDto.setTitle(note.getTitle());
+            noteDto.setContent(note.getNoteContent().getContent());
+
+            redirectAttributes.addFlashAttribute("noteDto", noteDto);
+            return String.format("redirect:/note/%d/view", noteId);
         }
 
-        if (isOwner && note.getIsEncrypted()) {
+        if (isOwner) {
             redirectAttributes.addFlashAttribute("note", note);
             return String.format("redirect:/note/%d/password", noteId);
         }
@@ -98,23 +120,42 @@ public class NoteController {
     String encryptedNote(@PathVariable Long noteId,
                          Model model,
                          @AuthenticationPrincipal AppUser user) {
-        Note note = noteService.getNote(noteId).orElseThrow();
-        boolean isOwner = Objects.equals(user.getId(), note.getUser().getId());
-
-        if (isOwner || note.getIsPublished()) {
-            return String.format("redirect:/note/%d", noteId);
-        }
-
-        if (isOwner && note.getIsEncrypted()) {
-            return "note-password";
-        }
-
-        throw new AccessDeniedException(user.getUsername() + " dont have access to note with id " + noteId);
+        model.addAttribute("notePasswordFormDto", new NotePasswordFormDto());
+        return "note-password";
     }
 
     @PostMapping("/{noteId}/password")
-    String encryptedNote(@PathVariable Long noteId) {
-        return "note";
+    String encryptedNote(@PathVariable Long noteId,
+                         @AuthenticationPrincipal AppUser user,
+                         NotePasswordFormDto notePasswordFormDto,
+                         RedirectAttributes redirectAttributes) {
+        Note note = noteService.getNote(noteId).orElseThrow();
+        boolean isOwner = Objects.equals(user.getId(), note.getUser().getId());
+
+        if (!isOwner) {
+            throw new AccessDeniedException(user.getUsername() + " dont have access to note with id " + noteId);
+        }
+
+        if (!note.getIsEncrypted()) {
+            return String.format("redirect:/note/%d", noteId);
+        }
+
+        try {
+            String content = noteEncryptionService.decrypt(note.getNoteContent(), notePasswordFormDto.getPassword());
+
+            NoteDto noteDto = new NoteDto();
+            noteDto.setId(note.getId());
+            noteDto.setContent(content);
+            noteDto.setTitle(note.getTitle());
+
+            redirectAttributes.addFlashAttribute("noteDto", noteDto);
+            return String.format("redirect:/note/%d/view", noteId);
+
+        } catch (InvalidPasswordException e) {
+            redirectAttributes.addAttribute("error", true);
+            redirectAttributes.addAttribute("message", "Invalid password");
+            return String.format("redirect:/note/%d/password", noteId);
+        }
     }
 
 }

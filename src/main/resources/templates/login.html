@@ -22,13 +22,18 @@
         <label for="totp">totp</label>
         <input type="text" id="totp" autocomplete="false" th:field="*{totp}"/>
 
+        <ul class="fail-messages" th:if="${param.error}">
+            <li th:text="${param.message}" />
+        </ul>
+
         <input type="submit" value="submit">
     </form>
 
-    <ul class="fail-messages" th:if="${param.error}">
-        <li th:text="${param.message}" />
-    </ul>
-
 <a th:href="@{/register}">Sign Up</a>
 </body>
+<style>
+    a {
+        font-size: 1rem;
+    }
+</style>
 </html>

@@ -22,7 +22,7 @@ public class NoteEncryptionServiceImpl implements NoteEncryptionService {
 
     private final PasswordEncoder passwordEncoder;
     private final static int ITERATIONS = 300_000;
-    private final static String ALGORITHM = "AES/GCM/PKCS5Padding";
+    private final static String ALGORITHM = "AES/CBC/PKCS5Padding";
 
     public NoteEncryptionServiceImpl(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;

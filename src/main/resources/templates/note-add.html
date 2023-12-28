@@ -41,7 +41,7 @@
         </span>
 
         <label for="encrypt-password" style="font-size:1rem;">Encryption Password</label>
-        <input type="password" id="encrypt-password" name="encrypt-password" placeholder="Password..." style="font-size: 1rem; border-width: 2px;" th:field="*{encryptionPassword}"/>
+        <input type="password" id="encrypt-password" name="encrypt-password" placeholder="Password..." style="font-size: 1rem; border-width: 2px;" th:field="*{encryptionPassword}" disabled/>
     </fieldset>
 
     <input type="submit" value="submit">
@@ -63,6 +63,14 @@
 
     publishNo.addEventListener("input", () => {
         encryptYes.removeAttribute("disabled")
+        encryptPassword.removeAttribute("disabled")
+    })
+
+    encryptNo.addEventListener("input", () => {
+        encryptPassword.setAttribute("disabled", "disabled")
+    })
+
+    encryptYes.addEventListener("input", () => {
         encryptPassword.removeAttribute("disabled")
     })
 </script>
