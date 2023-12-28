@@ -11,8 +11,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
-@Service
 public class UserAccountLockServiceImpl implements UserAccountLockService {
 
     public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(1, ChronoUnit.DAYS);
@@ -40,7 +40,7 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
 
     private AppUser unlockAccount(AppUser user) {
         user.setAccountNonLocked(true);
-        user.setLockTime(LocalDateTime.MIN);
+        user.setLockTime(LocalDateTime.of(1970, 1, 1, 0, 0));
         user.setFailedAttempt(0);
         return user;
     }
@@ -55,7 +55,14 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
     @Override
     @Transactional
     public void updateAccountLockState(String email, boolean wasAuthenticationSuccessful) {
-        AppUser user = userRepository.findVerifiedUserByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        Optional<AppUser> possibleUser = userRepository.findVerifiedUserByEmail(email);
+
+        // TODO: fix this shit
+        if (possibleUser.isEmpty()) {
+            return;
+        }
+
+        AppUser user = possibleUser.get();
         if (!wasAuthenticationSuccessful) {
             user.setFailedAttempt(user.getFailedAttempt() + 1);
             userRepository.save(lockAccount(user));

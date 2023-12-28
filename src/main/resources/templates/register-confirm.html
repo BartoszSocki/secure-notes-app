@@ -8,7 +8,7 @@
 <body>
 <h1>To confirm your registration open an authentication app and pass the totp code to input field</h1>
 
-<form action="#" th:action="@{/register-confirm}" th:object="${totpCodeDto}" method="POST" autocomplete="off">
+<form action="#" th:action="@{/register-confirm}" th:object="${totpCodeFormDto}" method="POST" autocomplete="off">
     <label for="code">code</label>
     <input type="text" id="code" autocomplete="false" th:field="*{code}"/>
 

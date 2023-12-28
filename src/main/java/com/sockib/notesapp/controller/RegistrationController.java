@@ -28,11 +28,10 @@ public class RegistrationController {
 
     @GetMapping("/register")
     String registrationPage(Model model) {
-        model.addAttribute("userRegistrationDto", new UserRegistrationFormDto());
+        model.addAttribute("userRegistrationFormDto", new UserRegistrationFormDto());
         return "register";
     }
 
-    // TODO: add validation
     @PostMapping("/register")
     String registerNewUser(UserRegistrationFormDto userRegistrationFormDto,
                            RedirectAttributes redirectAttributes,
@@ -70,14 +69,14 @@ public class RegistrationController {
 
         String totpQrCode = totpService.generateTotpQrCode(appUser).orElseThrow();
 
-        model.addAttribute("totpCodeDto", new TotpCodeFormDto());
+        model.addAttribute("totpCodeFormDto", new TotpCodeFormDto());
         model.addAttribute("totpQr", totpQrCode);
         return "register-totp";
     }
 
     @GetMapping("/register-confirm")
     String totpConfirmPage(Model model) {
-        model.addAttribute("totpCodeDto", new TotpCodeFormDto());
+        model.addAttribute("totpCodeFormDto", new TotpCodeFormDto());
         return "register-confirm";
     }
 

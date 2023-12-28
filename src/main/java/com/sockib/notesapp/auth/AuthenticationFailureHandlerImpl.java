@@ -20,7 +20,7 @@ public class AuthenticationFailureHandlerImpl extends SimpleUrlAuthenticationFai
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        String email = request.getParameter("email"); // TODO: check if works
+        String email = request.getParameter("username");
         userAccountLockService.updateAccountLockState(email, false);
 
         super.onAuthenticationFailure(request, response, exception);
