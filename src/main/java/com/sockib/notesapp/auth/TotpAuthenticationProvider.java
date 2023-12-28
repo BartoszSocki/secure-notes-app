@@ -3,6 +3,7 @@ package com.sockib.notesapp.auth;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.TotpService;
+import org.hibernate.IdentifierLoadAccess;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,15 +13,23 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Duration;
+
 public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
 
     private final UserRepository userRepository;
     private final TotpService totpService;
+    private final Duration delayDuration;
 
-    public TotpAuthenticationProvider(UserRepository userRepository, TotpService totpService, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public TotpAuthenticationProvider(UserRepository userRepository,
+                                      TotpService totpService,
+                                      UserDetailsService userDetailsService,
+                                      PasswordEncoder passwordEncoder,
+                                      Duration delayDuration) {
         super(passwordEncoder);
         this.userRepository = userRepository;
         this.totpService = totpService;
+        this.delayDuration = delayDuration;
         this.setUserDetailsService(userDetailsService);
     }
 
@@ -42,5 +51,12 @@ public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.isAssignableFrom(UsernamePasswordAuthenticationToken.class);
+    }
+
+    private void loginDelay() {
+        try {
+            Thread.sleep(delayDuration.toMillis());
+        } catch (InterruptedException ignore) {
+        }
     }
 }

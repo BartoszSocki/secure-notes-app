@@ -2,12 +2,15 @@
 
 create table if not exists users
 (
-    id          int generated always as identity not null primary key,
-    email       text                             not null,
-    username    text                             null,
-    password    text                             null,
-    totp_secret text                             null,
-    is_verified boolean default false
+    id                   int generated always as identity not null primary key,
+    email                text                             not null,
+    username             text                             null,
+    password             text                             null,
+    totp_secret          text                             null,
+    is_verified          boolean                                   default false,
+    is_user_non_locked   boolean                                   default true,
+    failed_login_attempt int                              not null default 0,
+    lock_time            date                             not null
 );
 
 create table if not exists note

@@ -2,7 +2,7 @@ package com.sockib.notesapp.service.impl;
 
 import com.sockib.notesapp.exception.*;
 import com.sockib.notesapp.model.dto.TotpCodeFormDto;
-import com.sockib.notesapp.model.dto.UserRegistrationDto;
+import com.sockib.notesapp.model.dto.UserRegistrationFormDto;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
@@ -49,32 +49,32 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public AppUser registerNewUser(UserRegistrationDto userRegistrationDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException, InvalidUsernameException, InvalidEmailException {
-        boolean doesUserAlreadyExists = userRepository.findVerifiedUserByEmail(userRegistrationDto.getEmail()).isPresent();
+    public AppUser registerNewUser(UserRegistrationFormDto userRegistrationFormDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException, InvalidUsernameException, InvalidEmailException {
+        boolean doesUserAlreadyExists = userRepository.findVerifiedUserByEmail(userRegistrationFormDto.getEmail()).isPresent();
         if (doesUserAlreadyExists) {
             throw new UserAlreadyExistsException();
         }
 
-        if (!usernameValidator.isUsernameValid(userRegistrationDto.getUsername())) {
+        if (!usernameValidator.isValid(userRegistrationFormDto.getUsername())) {
             throw new InvalidUsernameException();
         }
 
-        if (!emailValidator.isEmailValid(userRegistrationDto.getEmail())) {
+        if (!emailValidator.isValid(userRegistrationFormDto.getEmail())) {
             throw new InvalidEmailException();
         }
 
-        boolean arePasswordsTheSame = (userRegistrationDto.getPassword() != null) && userRegistrationDto.getPassword().equals(userRegistrationDto.getPasswordRepeated());
+        boolean arePasswordsTheSame = (userRegistrationFormDto.getPassword() != null) && userRegistrationFormDto.getPassword().equals(userRegistrationFormDto.getPasswordRepeated());
         if (!arePasswordsTheSame) {
             throw new PasswordMismatchException();
         }
 
-        PasswordStrengthResult passwordStrength = passwordStrengthPolicy.evaluate(userRegistrationDto.getPassword());
+        PasswordStrengthResult passwordStrength = passwordStrengthPolicy.evaluate(userRegistrationFormDto.getPassword());
         if (!passwordStrength.isStrong()) {
             throw new WeakPasswordException(passwordStrength.getFailMessages());
         }
 
         // create unverified user
-        AppUser appUser = saveNewUser(userRegistrationDto);
+        AppUser appUser = saveNewUser(userRegistrationFormDto);
         return appUser;
     }
 
@@ -93,13 +93,13 @@ public class RegistrationServiceImpl implements RegistrationService {
         userRepository.save(appUser);
     }
 
-    private AppUser saveNewUser(UserRegistrationDto userRegistrationDto) {
+    private AppUser saveNewUser(UserRegistrationFormDto userRegistrationFormDto) {
         String totpSecret = generateTotpSecret();
 
-        String encodedPassword = passwordEncoder.encode(userRegistrationDto.getPassword());
+        String encodedPassword = passwordEncoder.encode(userRegistrationFormDto.getPassword());
         AppUser appUser = new AppUser();
-        appUser.setEmail(userRegistrationDto.getEmail());
-        appUser.setUsername(userRegistrationDto.getUsername());
+        appUser.setEmail(userRegistrationFormDto.getEmail());
+        appUser.setUsername(userRegistrationFormDto.getUsername());
         appUser.setPassword(encodedPassword);
         appUser.setTotpSecret(totpSecret);
         appUser.setIsVerified(false);

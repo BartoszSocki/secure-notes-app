@@ -2,7 +2,7 @@ package com.sockib.notesapp.controller;
 
 import com.sockib.notesapp.exception.*;
 import com.sockib.notesapp.model.dto.TotpCodeFormDto;
-import com.sockib.notesapp.model.dto.UserRegistrationDto;
+import com.sockib.notesapp.model.dto.UserRegistrationFormDto;
 import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.service.RegistrationService;
 import com.sockib.notesapp.service.impl.TotpServiceImpl;
@@ -28,17 +28,17 @@ public class RegistrationController {
 
     @GetMapping("/register")
     String registrationPage(Model model) {
-        model.addAttribute("userRegistrationDto", new UserRegistrationDto());
+        model.addAttribute("userRegistrationDto", new UserRegistrationFormDto());
         return "register";
     }
 
     // TODO: add validation
     @PostMapping("/register")
-    String registerNewUser(UserRegistrationDto userRegistrationDto,
+    String registerNewUser(UserRegistrationFormDto userRegistrationFormDto,
                            RedirectAttributes redirectAttributes,
                            HttpServletRequest request) {
         try {
-            AppUser appUser = registrationService.registerNewUser(userRegistrationDto);
+            AppUser appUser = registrationService.registerNewUser(userRegistrationFormDto);
             request.getSession().setAttribute("user", appUser);
 
             return "redirect:/register-totp";

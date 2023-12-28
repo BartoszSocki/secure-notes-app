@@ -7,7 +7,7 @@
 </head>
 <body>
 <h1>Sign Up</h1>
-<form action="#" th:action="@{/register}" th:object="${userRegistrationDto}" method="POST" autocomplete="off">
+<form action="#" th:action="@{/register}" th:object="${userRegistrationFormDto}" method="POST" autocomplete="off">
     <label for="password">email</label>
     <input type="text" id="email" autocomplete="false" th:field="*{email}"/>
 
