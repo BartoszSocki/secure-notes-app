@@ -15,6 +15,7 @@ create table if not exists note
     id               int generated always as identity not null primary key,
     title            text                             not null,
     content          text                             null,
+    owner_id         int                              not null,
 
     encoded_password text                             null,
     salt             bytea                            null,

@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link th:href="@{/css/main.css}" rel="stylesheet"/>
+    <title>Note List</title>
+</head>
+<body>
+<h1>Note List</h1>
+<ul>
+    <li th:each="note: ${notes}">
+        <a th:href="@{'/note/' + ${note.getId()}}" th:text="*{note.getTitle()}" />
+        <span class="note-status encrypted" th:if="${note.isEncrypted == true}">Encrypted</span>
+        <span class="note-status published" th:if="${note.isPublished == true}">Published</span>
+    </li>
+</ul>
+</body>
+<style>
+    li {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .note-status {
+        padding: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .encrypted {
+        border: 4px solid red;
+        background: #ff6a6a;
+    }
+
+    .published {
+        border: 4px solid blue;
+        background: #5959ff;
+    }
+</style>
+</html>

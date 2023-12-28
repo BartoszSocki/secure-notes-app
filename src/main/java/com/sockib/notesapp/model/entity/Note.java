@@ -1,21 +1,23 @@
 package com.sockib.notesapp.model.entity;
 
 import com.sockib.notesapp.model.embeddable.NoteContent;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Entity(name = "note")
+@Table(name = "note")
+@Entity
 public class Note {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name="owner_id", nullable=false)
+    private AppUser user;
 
     private String title;
     private NoteContent noteContent;

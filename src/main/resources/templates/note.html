@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link th:href="@{/css/main.css}" rel="stylesheet"/>
+    <title th:text="*{noteDto.getTitle()}"></title>
+</head>
+<body>
+<div>
+    <h1 th:text="*{noteDto.getTitle()}"></h1>
+    <div th:utext="*{noteDto.getContent()}"></div>
+</div>
+</body>
+<style>
+    div {
+        margin-top: 3rem;
+        width: 60rem;
+    }
+    body {
+        justify-content: normal;
+    }
+</style>
+</html>
