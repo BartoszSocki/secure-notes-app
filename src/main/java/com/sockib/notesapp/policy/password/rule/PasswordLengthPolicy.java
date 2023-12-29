@@ -7,23 +7,26 @@ import java.util.List;
 
 public class PasswordLengthPolicy implements PasswordStrengthPolicy {
 
-    public final int MIN_SIZE;
-    public final int MAX_SIZE;
-    public final List<String> FAIL_MESSAGES;
+    public static final int DEFAULT_MIN_SIZE = 8;
+    public static final int DEFAULT_MAX_SIZE = 64;
+    public static final String DEFAULT_FAIL_MESSAGE_FORMAT = "password must be between %d and %d characters long";
+    public final int minSize;
+    public final int maxSize;
+    public final List<String> failMessages;
 
     public PasswordLengthPolicy() {
-        this(8, 64);
+        this(DEFAULT_MIN_SIZE, DEFAULT_MAX_SIZE);
     }
 
     public PasswordLengthPolicy(int minSize, int maxSize) {
-        this.MAX_SIZE = maxSize;
-        this.MIN_SIZE = minSize;
-        this.FAIL_MESSAGES = List.of("password must be between " + MIN_SIZE +  " and " + MAX_SIZE + " characters");
+        this.maxSize = maxSize;
+        this.minSize = minSize;
+        this.failMessages = List.of(DEFAULT_FAIL_MESSAGE_FORMAT.formatted(minSize, maxSize));
     }
 
     @Override
     public PasswordStrengthResult evaluate(String password) {
-        return new PasswordStrengthResult(password.length() >= MIN_SIZE && password.length() <= MAX_SIZE, FAIL_MESSAGES);
+        return new PasswordStrengthResult(password.length() >= minSize && password.length() <= maxSize, failMessages);
     }
 
 }

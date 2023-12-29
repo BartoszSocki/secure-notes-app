@@ -1,6 +1,5 @@
 package com.sockib.notesapp;
 
-import com.sockib.notesapp.service.impl.Totp;
 import org.apache.commons.codec.binary.Base32;
 import org.junit.jupiter.api.Test;
 

@@ -47,9 +47,9 @@ public class WebConfig {
         return http
                 .csrf(x -> x.disable())
                 .cors(x -> x.disable())
+                .requiresChannel(x -> x.anyRequest().requiresSecure())
                 .sessionManagement(x -> x
                                 .invalidSessionUrl("/login?error=true&message=Invalid session")
-//                        .sessionFixation(y -> y.changeSessionId())
                                 .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .formLogin(x -> x
@@ -59,8 +59,13 @@ public class WebConfig {
                         .failureHandler(authenticationFailureHandler())
                         .successHandler(successAuthenticationHandler())
                 )
+                .logout(x -> x
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                )
                 .authorizeHttpRequests(x -> x
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/logout").permitAll()
                         .requestMatchers("/register", "/register-totp", "/register-confirm").permitAll()
                         .requestMatchers("/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
@@ -135,9 +140,7 @@ public class WebConfig {
 
     @Bean
     AuthenticationManager authenticationManager() {
-        AuthenticationManager authenticationManager = new ProviderManager(totpAuthenticationProvider());
-
-        return authenticationManager;
+        return new ProviderManager(totpAuthenticationProvider());
     }
 
     @Bean

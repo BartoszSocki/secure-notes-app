@@ -11,6 +11,7 @@ import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.entity.Note;
 import com.sockib.notesapp.service.NoteEncryptionService;
 import com.sockib.notesapp.service.NoteService;
+import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,15 +58,24 @@ public class NoteController {
             noteService.addNote(user.getId(), noteFormDto);
         } catch (WeakPasswordException e) {
             noteFormDto.setEncryptionPassword("");
+            noteFormDto.setIsEncrypted(false);
+            noteFormDto.setIsPublished(false);
+
+            redirectAttributes.addAttribute("error", true);
+            redirectAttributes.addAttribute("message", List.of(e.getMessage()));
             redirectAttributes.addFlashAttribute("noteFormDto", noteFormDto);
             redirectAttributes.addFlashAttribute("error", e.getFailMessages());
-            return "redirect:/dashboard/note/add";
+            return "redirect:/note/add";
         } catch (NoteException e) {
             noteFormDto.setEncryptionPassword("");
             noteFormDto.setIsEncrypted(false);
             noteFormDto.setIsPublished(false);
+
+            redirectAttributes.addAttribute("error", true);
+            redirectAttributes.addAttribute("message", List.of(e.getMessage()));
             redirectAttributes.addFlashAttribute("noteFormDto", noteFormDto);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/note/add";
         }
 
         redirectAttributes.addFlashAttribute("success", "successfully added new note");

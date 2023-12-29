@@ -44,6 +44,10 @@
         <input type="password" id="encrypt-password" name="encrypt-password" placeholder="Password..." style="font-size: 1rem; border-width: 2px;" th:field="*{encryptionPassword}" disabled/>
     </fieldset>
 
+    <ul class="fail-messages" th:if="${param.error}">
+        <li th:text="${param.message}" />
+    </ul>
+
     <input type="submit" value="submit">
 </form>
 </body>

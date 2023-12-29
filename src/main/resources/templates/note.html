@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <link th:href="@{/css/main.css}" rel="stylesheet"/>
-    <title th:text="*{noteDto.getTitle()}"></title>
+    <title th:utext="*{noteDto.getTitle()}"></title>
 </head>
 <body>
 <div>
-    <h1 th:text="*{noteDto.getTitle()}"></h1>
+    <h1 th:utext="*{noteDto.getTitle()}"></h1>
     <div th:utext="*{noteDto.getContent()}"></div>
 </div>
 </body>

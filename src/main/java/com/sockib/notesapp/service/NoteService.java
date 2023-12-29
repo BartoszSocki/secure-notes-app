@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface NoteService {
 
-    Note addNote(long userId, NoteFormDto noteFormDto) throws WeakPasswordException, NoteException;
+    void addNote(long userId, NoteFormDto noteFormDto) throws WeakPasswordException, NoteException;
     List<Note> getNotesForUser(Long userId);
     Optional<Note> getNote(Long noteId);
 

@@ -2,6 +2,7 @@ package com.sockib.notesapp.service.impl;
 
 import com.sockib.notesapp.exception.NoteException;
 import com.sockib.notesapp.exception.WeakPasswordException;
+import com.sockib.notesapp.model.dto.NoteDto;
 import com.sockib.notesapp.model.dto.NoteFormDto;
 import com.sockib.notesapp.model.embeddable.NoteContent;
 import com.sockib.notesapp.model.entity.Note;
@@ -17,11 +18,13 @@ import com.sockib.notesapp.policy.password.PasswordStrengthPolicy;
 import com.sockib.notesapp.policy.password.PasswordStrengthResult;
 import com.sockib.notesapp.service.NoteEncryptionService;
 import com.sockib.notesapp.service.NoteService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class NoteServiceImpl implements NoteService {
 
@@ -49,7 +52,7 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public Note addNote(long userId, NoteFormDto noteFormDto) throws WeakPasswordException, NoteException {
+    public void addNote(long userId, NoteFormDto noteFormDto) throws WeakPasswordException, NoteException {
         String sanitizedNoteContent = noteContentSanitizer.sanitize(noteFormDto.getContent());
         String sanitizedTitle = noteTitleSanitizer.sanitize(noteFormDto.getTitle());
 
@@ -57,14 +60,17 @@ public class NoteServiceImpl implements NoteService {
         boolean isEncrypted = noteFormDto.getIsEncrypted();
 
         if (isPublished && isEncrypted) {
+            log.error(String.format("error adding user (%d) note (%s), note is published and encrypted", userId, noteFormDto.getTitle()));
             throw new NoteException("invalid note state");
         }
 
-        if (!noteTitleValidator.isValid(sanitizedNoteContent)) {
+        if (!noteTitleValidator.isValid(sanitizedTitle)) {
+            log.error(String.format("error adding user (%d) note, note has too long title", userId));
             throw new NoteException("title too long");
         }
 
         if (!noteContentValidator.isValid(sanitizedNoteContent)) {
+            log.error(String.format("error adding user (%d) note, note has too long content", userId));
             throw new NoteException("content too long");
         }
 
@@ -75,8 +81,10 @@ public class NoteServiceImpl implements NoteService {
         note.setUser(userRepository.getReferenceById(userId));
 
         if (isEncrypted) {
+            log.info(String.format("encrypting user (%d) note", userId));
             PasswordStrengthResult passwordStrength = passwordStrengthPolicy.evaluate(noteFormDto.getEncryptionPassword());
             if (!passwordStrength.isStrong()) {
+                log.error(String.format("error encrypting user (%d) note, password too weak", userId));
                 throw new WeakPasswordException(passwordStrength.getFailMessages());
             }
 
@@ -91,7 +99,8 @@ public class NoteServiceImpl implements NoteService {
             note.setNoteContent(noteContent);
         }
 
-        return noteRepository.save(note);
+        Note savedNote = noteRepository.save(note);
+        log.info(String.format("successfully added user (%d) note (%d)", userId, savedNote.getId()));
     }
 
     @Override

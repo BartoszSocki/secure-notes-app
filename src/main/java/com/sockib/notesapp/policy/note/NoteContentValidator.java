@@ -9,13 +9,13 @@ public class NoteContentValidator implements Validator<String> {
     private final long maxSize;
     private final long minSize;
 
-    public NoteContentValidator(long maxSize, long minSize) {
-        this.maxSize = maxSize;
+    public NoteContentValidator(long minSize, long maxSize) {
         this.minSize = minSize;
+        this.maxSize = maxSize;
     }
 
     public NoteContentValidator() {
-        this(DEFAULT_MAX_SIZE, DEFAULT_MIN_SIZE);
+        this(DEFAULT_MIN_SIZE, DEFAULT_MAX_SIZE);
     }
 
     @Override

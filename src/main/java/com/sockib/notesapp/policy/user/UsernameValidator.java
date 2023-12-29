@@ -10,7 +10,7 @@ public class UsernameValidator implements Validator<String> {
 
     public final static int DEFAULT_MIN_SIZE = 8;
     public final static int DEFAULT_MAX_SIZE = 12;
-    public final static String PATTERN = "^[a-zA-Z0-9]+$";
+    public final static String USERNAME_ALLOWED_CHARACTERS = "^[a-zA-Z0-9]+$";
     private final int minSize;
     private final int maxSize;
     private final Pattern regex;
@@ -18,7 +18,7 @@ public class UsernameValidator implements Validator<String> {
     public UsernameValidator(int minSize, int maxSize) {
         this.minSize = minSize;
         this.maxSize = maxSize;
-        this.regex = Pattern.compile(PATTERN);
+        this.regex = Pattern.compile(USERNAME_ALLOWED_CHARACTERS);
     }
 
     public UsernameValidator() {

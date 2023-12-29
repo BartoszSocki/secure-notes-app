@@ -9,9 +9,9 @@
 <h1>Note List</h1>
 <ul>
     <li th:each="note: ${notes}">
-        <a th:href="@{'/note/' + ${note.getId()}}" th:text="*{note.getTitle()}" />
-        <span class="note-status encrypted" th:if="${note.isEncrypted == true}">Encrypted</span>
-        <span class="note-status published" th:if="${note.isPublished == true}">Published</span>
+        <a th:href="@{'/note/' + ${note.getId()}}" th:utext="*{note.getTitle()}"/>
+        <span class="note-status encrypted" th:if="${note.isEncrypted}">Encrypted</span>
+        <span class="note-status published" th:if="${note.isPublished}">Published</span>
     </li>
 </ul>
 </body>
@@ -21,6 +21,13 @@
         flex-direction: row;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 20ch;
     }
 
     .note-status {

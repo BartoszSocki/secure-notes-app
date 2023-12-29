@@ -12,12 +12,14 @@ import com.sockib.notesapp.policy.user.UsernameValidator;
 import com.sockib.notesapp.service.RegistrationService;
 import com.sockib.notesapp.service.TotpService;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base32;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 
+@Slf4j
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
 
@@ -30,7 +32,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final UsernameValidator usernameValidator;
     private final EmailValidator emailValidator;
 
-    private static final int TOTP_SHARED_SECRET_LENGTH = 16;
+    public static final int TOTP_SHARED_SECRET_LENGTH = 16;
 
     public RegistrationServiceImpl(PasswordStrengthPolicy passwordStrengthPolicy,
                                    UserRepository userRepository,
@@ -52,24 +54,30 @@ public class RegistrationServiceImpl implements RegistrationService {
     public AppUser registerNewUser(UserRegistrationFormDto userRegistrationFormDto) throws PasswordMismatchException, UserAlreadyExistsException, WeakPasswordException, InvalidUsernameException, InvalidEmailException {
         boolean doesUserAlreadyExists = userRepository.findVerifiedUserByEmail(userRegistrationFormDto.getEmail()).isPresent();
         if (doesUserAlreadyExists) {
+            log.error(String.format("user (%s) already exists", userRegistrationFormDto.getEmail()));
             throw new UserAlreadyExistsException();
         }
 
         if (!usernameValidator.isValid(userRegistrationFormDto.getUsername())) {
+            log.error(String.format("invalid username (%s)", userRegistrationFormDto.getUsername()));
             throw new InvalidUsernameException();
         }
 
         if (!emailValidator.isValid(userRegistrationFormDto.getEmail())) {
+            log.error(String.format("invalid email (%s)", userRegistrationFormDto.getEmail()));
             throw new InvalidEmailException();
         }
 
-        boolean arePasswordsTheSame = (userRegistrationFormDto.getPassword() != null) && userRegistrationFormDto.getPassword().equals(userRegistrationFormDto.getPasswordRepeated());
+        boolean arePasswordsTheSame = (userRegistrationFormDto.getPassword() != null)
+                && userRegistrationFormDto.getPassword().equals(userRegistrationFormDto.getPasswordRepeated());
         if (!arePasswordsTheSame) {
+            log.error("password mismatch");
             throw new PasswordMismatchException();
         }
 
         PasswordStrengthResult passwordStrength = passwordStrengthPolicy.evaluate(userRegistrationFormDto.getPassword());
         if (!passwordStrength.isStrong()) {
+            log.error("weak password");
             throw new WeakPasswordException(passwordStrength.getFailMessages());
         }
 
@@ -86,11 +94,13 @@ public class RegistrationServiceImpl implements RegistrationService {
         String clientTotpCode = totpCodeDto.getCode();
 
 //        if (serverTotpCode == null || !serverTotpCode.equals(clientTotpCode)) {
+//            log.error(String.format("invalid totp code passed by user (%d)", userId));
 //            throw new TotpCodeException();
 //        }
 
         appUser.setIsVerified(true);
         userRepository.save(appUser);
+        log.info(String.format("successfully confirmed registration for user (%d)", userId));
     }
 
     private AppUser saveNewUser(UserRegistrationFormDto userRegistrationFormDto) {

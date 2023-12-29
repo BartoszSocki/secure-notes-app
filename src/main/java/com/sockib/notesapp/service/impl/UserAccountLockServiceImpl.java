@@ -14,9 +14,8 @@ import java.util.Optional;
 
 public class UserAccountLockServiceImpl implements UserAccountLockService {
 
-//    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(1, ChronoUnit.DAYS);
-    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(2, ChronoUnit.MINUTES);
-    public static final int DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS = 2;
+    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+    public static final int DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS = 3;
 
     private final Duration accountLockDuration;
     private final int maxAccountFailedLoginAttempts;
