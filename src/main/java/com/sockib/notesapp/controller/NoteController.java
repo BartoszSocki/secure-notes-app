@@ -2,6 +2,7 @@ package com.sockib.notesapp.controller;
 
 import com.sockib.notesapp.exception.InvalidPasswordException;
 import com.sockib.notesapp.exception.NoteException;
+import com.sockib.notesapp.exception.ResourceNotFoundException;
 import com.sockib.notesapp.exception.WeakPasswordException;
 import com.sockib.notesapp.model.dto.NoteDto;
 import com.sockib.notesapp.model.dto.NoteFormDto;
@@ -92,8 +93,8 @@ public class NoteController {
     @GetMapping("/{noteId}")
     String notePage(@PathVariable Long noteId,
                     RedirectAttributes redirectAttributes,
-                    @AuthenticationPrincipal AppUser user) {
-        Note note = noteService.getNote(noteId).orElseThrow();
+                    @AuthenticationPrincipal AppUser user) throws ResourceNotFoundException {
+        Note note = noteService.getNote(noteId).orElseThrow(ResourceNotFoundException::new);
         boolean isOwner = Objects.equals(user.getId(), note.getUser().getId());
         boolean isOwnerAndNotEncrypted = isOwner && !note.getIsEncrypted();
         boolean isPublished = note.getIsPublished();
@@ -118,8 +119,7 @@ public class NoteController {
 
     @GetMapping("/{noteId}/password")
     String encryptedNote(@PathVariable Long noteId,
-                         Model model,
-                         @AuthenticationPrincipal AppUser user) {
+                         Model model) {
         model.addAttribute("notePasswordFormDto", new NotePasswordFormDto());
         return "note-password";
     }
@@ -128,16 +128,16 @@ public class NoteController {
     String encryptedNote(@PathVariable Long noteId,
                          @AuthenticationPrincipal AppUser user,
                          NotePasswordFormDto notePasswordFormDto,
-                         RedirectAttributes redirectAttributes) {
-        Note note = noteService.getNote(noteId).orElseThrow();
+                         RedirectAttributes redirectAttributes) throws ResourceNotFoundException {
+        Note note = noteService.getNote(noteId).orElseThrow(ResourceNotFoundException::new);
         boolean isOwner = Objects.equals(user.getId(), note.getUser().getId());
-
-        if (!isOwner) {
-            throw new AccessDeniedException(user.getUsername() + " dont have access to note with id " + noteId);
-        }
 
         if (!note.getIsEncrypted()) {
             return String.format("redirect:/note/%d", noteId);
+        }
+
+        if (!isOwner) {
+            throw new AccessDeniedException(user.getUsername() + " dont have access to note with id " + noteId);
         }
 
         try {
