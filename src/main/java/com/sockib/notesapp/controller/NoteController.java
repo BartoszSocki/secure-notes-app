@@ -12,7 +12,6 @@ import com.sockib.notesapp.model.entity.Note;
 import com.sockib.notesapp.service.NoteEncryptionService;
 import com.sockib.notesapp.service.NoteService;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
