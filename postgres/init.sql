@@ -10,7 +10,7 @@ create table if not exists users
     is_verified          boolean                                   default false,
     is_user_non_locked   boolean                                   default true,
     failed_login_attempt int                              not null default 0,
-    lock_time            date                             not null default make_date(1970, 0, 0)
+    lock_time            timestamp                        not null default make_timestamp(1970, 0, 0, 0, 0, 0)
 );
 
 create table if not exists note
