@@ -45,4 +45,5 @@ Secure Notes App with 2FA, allowing user to write, publish and encrypt notes
 - Password Change
 - Localization
 - Tests
+- Better note editor
 
