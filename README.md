@@ -20,6 +20,14 @@ Secure Notes App with 2FA, allowing user to write, publish and encrypt notes
 - spring security
 - thymeleaf
 
+## Build
+`
+cd notes-app
+./gradlew bootJar
+docker build -t security-app .
+docker compose up
+`
+
 ## Examples
 
 ### Login Page
