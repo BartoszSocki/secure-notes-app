@@ -1,11 +1,26 @@
 services:
   postgres:
     image: 'postgres:latest'
+    container_name: 'db'
     environment:
       - 'POSTGRES_DB=notes_db'
       - 'POSTGRES_PASSWORD=Password1!'
       - 'POSTGRES_USER=notes'
     ports:
       - '5432'
+    networks:
+      - app-network
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
+  app:
+    image: 'security-app'
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+    ports:
+      - '3443:3443'
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+networks:
+  app-network:
