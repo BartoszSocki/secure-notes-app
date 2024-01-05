@@ -4,14 +4,20 @@ import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.UserAccountLockService;
 import jakarta.transaction.Transactional;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+@Slf4j
+@Service
 public class UserAccountLockServiceImpl implements UserAccountLockService {
 
     public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
@@ -21,21 +27,21 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
     private final int maxAccountFailedLoginAttempts;
     private final UserRepository userRepository;
 
-    public UserAccountLockServiceImpl(Duration accountLockDuration, int maxAccountFailedLoginAttempts, UserRepository userRepository) {
-        this.accountLockDuration = accountLockDuration;
-        this.maxAccountFailedLoginAttempts = maxAccountFailedLoginAttempts;
+    public UserAccountLockServiceImpl(UserRepository userRepository) {
+        this.accountLockDuration = DEFAULT_ACCOUNT_LOCK_DURATION;
+        this.maxAccountFailedLoginAttempts = DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS;
         this.userRepository = userRepository;
     }
 
-    public UserAccountLockServiceImpl(UserRepository userRepository) {
-        this(DEFAULT_ACCOUNT_LOCK_DURATION, DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS, userRepository);
-    }
+//    public UserAccountLockServiceImpl(UserRepository userRepository) {
+//        this(DEFAULT_ACCOUNT_LOCK_DURATION, DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS, userRepository);
+//    }
 
     private boolean canAccountBeUnlocked(AppUser user) {
-        int userLockStartInMillis = user.getLockTime().getNano() / 1000;
-        int now = Instant.now().getNano() / 1000;
+        long userLockStartInSeconds = user.getLockTime().toEpochSecond(ZoneOffset.ofHours(0));;
+        long now = Instant.now().toEpochMilli() / 1000;
 
-        return userLockStartInMillis + accountLockDuration.toMillis() < now;
+        return userLockStartInSeconds + accountLockDuration.toSeconds() < now;
     }
 
     @Override
@@ -54,6 +60,8 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
             user.setAccountNonLocked(user.getFailedAttempt() < maxAccountFailedLoginAttempts);
             user.setLockTime(LocalDateTime.now());
             userRepository.save(user);
+
+            log.info(String.format("user (%d) failed logging attempts (%d), is account locked (%b)", user.getId(), user.getFailedAttempt(), !user.isAccountNonLocked()));
             return !user.isAccountNonLocked();
         }
 
@@ -62,6 +70,8 @@ public class UserAccountLockServiceImpl implements UserAccountLockService {
             user.setLockTime(LocalDateTime.of(1970, 1, 1, 0, 0));
             user.setFailedAttempt(0);
             userRepository.save(user);
+
+            log.info(String.format("user (%d) unlocked", user.getId()));
             return false;
         }
 
