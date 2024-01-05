@@ -45,11 +45,14 @@ dependencies {
     // password strength
     implementation 'com.nulab-inc:zxcvbn:1.8.2'
 
+    // replace vulnerable transitive dependency of owasp sanitizer
+    implementation 'com.google.guava:guava:16.0.1'
+
     // sanitization
     implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20220608.1'
 
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+//    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -58,4 +61,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = 'app.jar';
 }
