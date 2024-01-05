@@ -22,7 +22,7 @@ Secure Notes App with 2FA, allowing user to write, publish and encrypt notes
 
 ## Build
 ```
-cd notes-app
+cd secure-notes-app
 ./gradlew bootJar
 docker build -t security-app .
 docker compose up
