@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<AppUser, Long> {
 
-    @Query("SELECT u FROM AppUser u WHERE u.email = :email") // AND u.isVerified = true
+    @Query("SELECT u FROM AppUser u WHERE u.email = :email AND u.isVerified = true")
     Optional<AppUser> findVerifiedUserByEmail(String email);
 
 }
