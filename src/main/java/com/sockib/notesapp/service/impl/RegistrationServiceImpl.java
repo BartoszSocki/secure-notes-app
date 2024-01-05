@@ -90,13 +90,15 @@ public class RegistrationServiceImpl implements RegistrationService {
     public void confirmUserRegistration(Long userId, TotpCodeFormDto totpCodeDto) throws RegistrationException {
         AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new RegistrationException("user not found"));
 
-        String serverTotpCode = totpService.generateTotpCode(appUser.getTotpSecret());
-        String clientTotpCode = totpCodeDto.getCode();
+        if (appUser.getIsVerified()) {
+            log.error(String.format("user (%d) already registered", userId));
+            throw new RegistrationException("user already registered");
+        }
 
-//        if (serverTotpCode == null || !serverTotpCode.equals(clientTotpCode)) {
-//            log.error(String.format("invalid totp code passed by user (%d)", userId));
-//            throw new TotpCodeException();
-//        }
+        if (!totpService.isTotpCorrect(appUser.getTotpSecret(), totpCodeDto.getCode())) {
+            log.error(String.format("invalid totp code passed by user (%d)", userId));
+            throw new TotpCodeException();
+        }
 
         appUser.setIsVerified(true);
         userRepository.save(appUser);
@@ -117,14 +119,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         return userRepository.save(appUser);
     }
 
-    private String byteArrayToBase32String(byte[] bytes) {
-        return base32Encoder.encodeToString(bytes);
-    }
-
     private String generateTotpSecret() {
         byte[] totpSecret = new byte[TOTP_SHARED_SECRET_LENGTH];
         secureRandom.nextBytes(totpSecret);
-        return byteArrayToBase32String(totpSecret);
+        return base32Encoder.encodeToString(totpSecret);
     }
 
 }
