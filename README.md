@@ -27,6 +27,7 @@ cd secure-notes-app
 docker build -t security-app .
 docker compose up
 ```
+App will be running on port 3443
 
 ## Examples
 
