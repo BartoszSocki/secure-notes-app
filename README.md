@@ -21,12 +21,12 @@ Secure Notes App with 2FA, allowing user to write, publish and encrypt notes
 - thymeleaf
 
 ## Build
-`
-cd notes-app \
-./gradlew bootJar \
-docker build -t security-app . \
+```
+cd notes-app
+./gradlew bootJar
+docker build -t security-app .
 docker compose up
-`
+```
 
 ## Examples
 
