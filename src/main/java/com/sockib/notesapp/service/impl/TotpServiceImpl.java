@@ -80,7 +80,12 @@ public class TotpServiceImpl implements TotpService {
     }
 
     @Override
-    public String generateTotpCode(String secretKey) {
+    public boolean isTotpCorrect(String secretKey, String userTotpCode) {
+        String serverTotpCode = this.generateTotpCode(secretKey);
+        return serverTotpCode.equals(userTotpCode);
+    }
+
+    private String generateTotpCode(String secretKey) {
         long counter = Instant.now().getEpochSecond() / 30;
         Base32 base32 = new Base32();
         byte[] keyBytes = base32.decode(secretKey);
