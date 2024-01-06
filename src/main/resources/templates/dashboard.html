@@ -10,7 +10,11 @@
 <ul>
     <li><a th:href="@{/note/list}">Note List</a></li>
     <li><a th:href="@{/note/add}">Add Note</a></li>
-    <li><a th:href="@{/logout}">Logout</a></li>
+    <li>
+        <form th:action="@{/logout}" th:method="POST">
+            <input type="submit" th:value="logout">
+        </form>
+    </li>
 </ul>
 </body>
 </html>
