@@ -4,17 +4,13 @@ import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.TotpService;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.IdentifierLoadAccess;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
@@ -43,7 +39,7 @@ public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
         AppUser appUser = userRepository.findVerifiedUserByEmail(authentication.getName())
                 .orElseThrow(() -> new BadCredentialsException("Bad credentials"));
 
-        if (!totpService.isTotpCorrect(appUser.getTotpSecret(), clientTotp)) {
+        if (totpService.isTotpNotCorrect(appUser.getTotpSecret(), clientTotp)) {
             log.error(String.format("invalid totp code passed by user (%d)", appUser.getId()));
             throw new BadCredentialsException("Bad credentials");
         }

@@ -10,14 +10,12 @@ import com.sockib.notesapp.policy.password.PasswordStrengthResult;
 import com.sockib.notesapp.policy.user.EmailValidator;
 import com.sockib.notesapp.policy.user.UsernameValidator;
 import com.sockib.notesapp.service.RegistrationService;
+import com.sockib.notesapp.service.TotpSecretGeneratorService;
 import com.sockib.notesapp.service.TotpService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base32;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.security.SecureRandom;
 
 @Slf4j
 @Service
@@ -26,25 +24,23 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final PasswordStrengthPolicy passwordStrengthPolicy;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final SecureRandom secureRandom;
-    private final Base32 base32Encoder;
+
     private final TotpService totpService;
     private final UsernameValidator usernameValidator;
     private final EmailValidator emailValidator;
-
-    public static final int TOTP_SHARED_SECRET_LENGTH = 16;
+    private final TotpSecretGeneratorService totpSecretGeneratorService;
 
     public RegistrationServiceImpl(PasswordStrengthPolicy passwordStrengthPolicy,
                                    UserRepository userRepository,
                                    PasswordEncoder passwordEncoder,
                                    TotpService totpService,
+                                   TotpSecretGeneratorService totpSecretGeneratorService,
                                    UsernameValidator usernameValidator) {
         this.passwordStrengthPolicy = passwordStrengthPolicy;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.secureRandom = new SecureRandom();
-        this.base32Encoder = new Base32();
         this.totpService = totpService;
+        this.totpSecretGeneratorService = totpSecretGeneratorService;
         this.usernameValidator = usernameValidator;
         this.emailValidator = new EmailValidator();
     }
@@ -95,7 +91,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new RegistrationException("user already registered");
         }
 
-        if (!totpService.isTotpCorrect(appUser.getTotpSecret(), totpCodeDto.getCode())) {
+        if (totpService.isTotpNotCorrect(appUser.getTotpSecret(), totpCodeDto.getCode())) {
             log.error(String.format("invalid totp code passed by user (%d)", userId));
             throw new TotpCodeException();
         }
@@ -106,7 +102,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     private AppUser saveNewUser(UserRegistrationFormDto userRegistrationFormDto) {
-        String totpSecret = generateTotpSecret();
+        String totpSecret = totpSecretGeneratorService.generateTotpSecret();
 
         String encodedPassword = passwordEncoder.encode(userRegistrationFormDto.getPassword());
         AppUser appUser = new AppUser();
@@ -117,12 +113,6 @@ public class RegistrationServiceImpl implements RegistrationService {
         appUser.setIsVerified(false);
 
         return userRepository.save(appUser);
-    }
-
-    private String generateTotpSecret() {
-        byte[] totpSecret = new byte[TOTP_SHARED_SECRET_LENGTH];
-        secureRandom.nextBytes(totpSecret);
-        return base32Encoder.encodeToString(totpSecret);
     }
 
 }

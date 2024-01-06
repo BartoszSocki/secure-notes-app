@@ -6,6 +6,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.sockib.notesapp.model.entity.AppUser;
+import com.sockib.notesapp.service.TotpSecretGeneratorService;
 import com.sockib.notesapp.service.TotpService;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.hc.core5.net.URIBuilder;
@@ -20,19 +21,29 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
 
 @Service
-public class TotpServiceImpl implements TotpService {
+public class TotpServiceImpl implements TotpService, TotpSecretGeneratorService {
 
     @Value("${totp.issuer}")
     private String ISSUER;
+    @Value("${totp.shared_secret_length:16}")
+    private int TOTP_SHARED_SECRET_LENGTH;
     private static final int QR_CODE_SIZE = 512;
     private static final String TOTP_ALGORITHM = "SHA1";
     private static final String ALG = "HmacSHA1";
     private static final int DIGIT_LENGTH = 6;
+    private final SecureRandom secureRandom;
+    private final Base32 base32Encoder;
+
+    public TotpServiceImpl() {
+        this.secureRandom = new SecureRandom();
+        this.base32Encoder = new Base32();
+    }
 
     private String generateAuthenticationUrl(String secret, String issuer, String account) {
         URIBuilder uriBuilder = new URIBuilder();
@@ -80,9 +91,9 @@ public class TotpServiceImpl implements TotpService {
     }
 
     @Override
-    public boolean isTotpCorrect(String secretKey, String userTotpCode) {
+    public boolean isTotpNotCorrect(String secretKey, String userTotpCode) {
         String serverTotpCode = this.generateTotpCode(secretKey);
-        return serverTotpCode.equals(userTotpCode);
+        return !serverTotpCode.equals(userTotpCode);
     }
 
     private String generateTotpCode(String secretKey) {
@@ -113,4 +124,10 @@ public class TotpServiceImpl implements TotpService {
         }
     }
 
+    @Override
+    public String generateTotpSecret() {
+        byte[] totpSecret = new byte[TOTP_SHARED_SECRET_LENGTH];
+        secureRandom.nextBytes(totpSecret);
+        return base32Encoder.encodeToString(totpSecret);
+    }
 }
