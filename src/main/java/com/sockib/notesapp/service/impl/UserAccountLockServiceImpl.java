@@ -4,8 +4,8 @@ import com.sockib.notesapp.model.entity.AppUser;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.service.UserAccountLockService;
 import jakarta.transaction.Transactional;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -13,32 +13,24 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Slf4j
 @Service
 public class UserAccountLockServiceImpl implements UserAccountLockService {
 
-    public static final Duration DEFAULT_ACCOUNT_LOCK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
-    public static final int DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS = 3;
-
-    private final Duration accountLockDuration;
-    private final int maxAccountFailedLoginAttempts;
     private final UserRepository userRepository;
+    @Value("${account.lock-duration:5m}")
+    private Duration accountLockDuration;
+    @Value("${account.lock-attempts:3}")
+    private int maxAccountFailedLoginAttempts;
 
     public UserAccountLockServiceImpl(UserRepository userRepository) {
-        this.accountLockDuration = DEFAULT_ACCOUNT_LOCK_DURATION;
-        this.maxAccountFailedLoginAttempts = DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS;
         this.userRepository = userRepository;
     }
 
-//    public UserAccountLockServiceImpl(UserRepository userRepository) {
-//        this(DEFAULT_ACCOUNT_LOCK_DURATION, DEFAULT_MAX_ACCOUNT_FAILED_LOGIN_ATTEMPTS, userRepository);
-//    }
-
     private boolean canAccountBeUnlocked(AppUser user) {
-        long userLockStartInSeconds = user.getLockTime().toEpochSecond(ZoneOffset.ofHours(0));;
+        long userLockStartInSeconds = user.getLockTime().toEpochSecond(ZoneOffset.ofHours(0));
         long now = Instant.now().toEpochMilli() / 1000;
 
         return userLockStartInSeconds + accountLockDuration.toSeconds() < now;

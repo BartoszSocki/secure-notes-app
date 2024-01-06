@@ -37,7 +37,7 @@ public class TotpServiceImpl implements TotpService, TotpSecretGeneratorService 
     private final Base32 base32Encoder;
     @Value("${totp.issuer}")
     private String ISSUER;
-    @Value("${totp.shared_secret_length:16}")
+    @Value("${totp.shared-secret-length:16}")
     private int TOTP_SHARED_SECRET_LENGTH;
 
     public TotpServiceImpl() {
