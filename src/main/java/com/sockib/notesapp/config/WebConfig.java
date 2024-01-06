@@ -75,6 +75,9 @@ public class WebConfig {
                         .requestMatchers("/css/**", "/js/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(x -> x
+                        .accessDeniedPage("/access-denied")
+                )
                 .build();
     }
 
