@@ -20,7 +20,7 @@ public class PasswordConfig {
     }
 
     @Bean
-    @Profile({"!prod", "no-password-policy"})
+    @Profile({"no-password-policy"})
     PasswordStrengthPolicy noPasswordPolicy() {
         return new EmptyPolicy();
     }
