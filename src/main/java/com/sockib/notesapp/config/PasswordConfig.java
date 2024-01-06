@@ -14,13 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class PasswordConfig {
 
     @Bean
-    @Profile("prod")
+    @Profile({"prod", "!no-password-policy"})
     PasswordStrengthPolicy defaultPasswordPolicy() {
         return PasswordStrengthPolicy.combine(new EntropyPasswordStrengthPolicy(), new DefaultPasswordStrengthPolicy());
     }
 
     @Bean
-    @Profile("local")
+    @Profile({"!prod", "no-password-policy"})
     PasswordStrengthPolicy noPasswordPolicy() {
         return new EmptyPolicy();
     }
