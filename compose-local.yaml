@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    container_name: 'db'
+    environment:
+      - 'POSTGRES_DB=notes_db'
+      - 'POSTGRES_PASSWORD=Password1!'
+      - 'POSTGRES_USER=notes'
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
