@@ -41,11 +41,11 @@ public class TotpAuthenticationProvider extends DaoAuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String clientTotp = ((TotpAuthenticationDetails) authentication.getDetails()).getCode();
         AppUser appUser = userRepository.findVerifiedUserByEmail(authentication.getName())
-                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+                .orElseThrow(() -> new BadCredentialsException("Bad credentials"));
 
         if (!totpService.isTotpCorrect(appUser.getTotpSecret(), clientTotp)) {
             log.error(String.format("invalid totp code passed by user (%d)", appUser.getId()));
-            throw new BadCredentialsException("Invalid credentials");
+            throw new BadCredentialsException("Bad credentials");
         }
 
         loginDelay();
