@@ -51,7 +51,7 @@ public class WebConfig {
     SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http
                 .csrf(x -> x.disable())
-                .cors(x -> x.disable())
+//                .cors(x -> x.disable())
                 .requiresChannel(x -> x.anyRequest().requiresSecure())
                 .sessionManagement(x -> x
                         .invalidSessionUrl("/login?error=true&message=Invalid session")
