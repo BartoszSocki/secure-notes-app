@@ -7,6 +7,7 @@ import java.util.Optional;
 public interface TotpService {
 
     Optional<String> generateTotpQrCode(AppUser appUser);
+
     boolean isTotpNotCorrect(String secretKey, String userTotpCode);
 
 }

@@ -29,16 +29,16 @@ import java.util.Optional;
 @Service
 public class TotpServiceImpl implements TotpService, TotpSecretGeneratorService {
 
-    @Value("${totp.issuer}")
-    private String ISSUER;
-    @Value("${totp.shared_secret_length:16}")
-    private int TOTP_SHARED_SECRET_LENGTH;
     private static final int QR_CODE_SIZE = 512;
     private static final String TOTP_ALGORITHM = "SHA1";
     private static final String ALG = "HmacSHA1";
     private static final int DIGIT_LENGTH = 6;
     private final SecureRandom secureRandom;
     private final Base32 base32Encoder;
+    @Value("${totp.issuer}")
+    private String ISSUER;
+    @Value("${totp.shared_secret_length:16}")
+    private int TOTP_SHARED_SECRET_LENGTH;
 
     public TotpServiceImpl() {
         this.secureRandom = new SecureRandom();
@@ -73,7 +73,7 @@ public class TotpServiceImpl implements TotpService, TotpSecretGeneratorService 
             String imageEncoded = Base64.getEncoder().encodeToString(png.toByteArray());
             String result = String.format("data:%s;base64,%s", "image/png", imageEncoded);
             return Optional.of(result);
-        } catch (WriterException|IOException e) {
+        } catch (WriterException | IOException e) {
             return Optional.empty();
         }
     }
@@ -130,4 +130,5 @@ public class TotpServiceImpl implements TotpService, TotpSecretGeneratorService 
         secureRandom.nextBytes(totpSecret);
         return base32Encoder.encodeToString(totpSecret);
     }
+
 }
