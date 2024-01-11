@@ -18,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: secure-notes-app:latest
     environment:
       - "SPRING_PROFILES_ACTIVE=prod"
     ports:
