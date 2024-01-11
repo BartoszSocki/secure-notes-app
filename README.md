@@ -23,9 +23,7 @@ Secure Notes App with 2FA, allowing user to write, publish and encrypt notes
 ## Build
 ```
 cd secure-notes-app
-./gradlew bootJar
-docker build -t security-app .
-docker compose up
+docker compose up --build
 ```
 App will be running on port 3443
 
