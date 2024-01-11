@@ -1,5 +1,15 @@
-FROM eclipse-temurin:17
-VOLUME /tmp
-COPY build/libs/*.jar app.jar
-COPY src/main/resources/springboot.p12 springboot.p12
-ENTRYPOINT ["java","-jar","/app.jar"]
+FROM openjdk:17-jdk-slim
+
+COPY gradle/wrapper gradle/wrapper
+
+COPY gradlew .
+
+COPY build.gradle .
+COPY settings.gradle .
+COPY springboot.p12 .
+COPY src ./src
+
+RUN ./gradlew bootJar
+
+EXPOSE 3443
+ENTRYPOINT ["java", "-jar", "build/libs/app.jar"]

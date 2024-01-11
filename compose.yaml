@@ -12,15 +12,20 @@ services:
       - app-network
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
-  app:
-    image: 'security-app'
+
+  secure-notes-app:
+    container_name: 'secure-notes-app'
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       - "SPRING_PROFILES_ACTIVE=prod"
     ports:
-      - '3443:3443'
+      - '443:3443'
     depends_on:
       - postgres
     networks:
       - app-network
+
 networks:
   app-network:
