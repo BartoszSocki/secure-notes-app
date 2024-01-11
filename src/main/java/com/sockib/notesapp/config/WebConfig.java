@@ -5,6 +5,7 @@ import com.sockib.notesapp.auth.TotpAuthenticationProvider;
 import com.sockib.notesapp.model.repository.UserRepository;
 import com.sockib.notesapp.policy.user.UsernameValidator;
 import com.sockib.notesapp.service.TotpService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +34,9 @@ public class WebConfig {
     final AuthenticationFailureHandler authenticationFailureHandler;
     final AuthenticationSuccessHandler authenticationSuccessHandler;
 
+    @Value("${account.login-delay:200ms}")
+    private Duration loginDelay;
+
     public WebConfig(UserRepository userRepository,
                      TotpService totpService,
                      UserDetailsService userDetailsService,
@@ -50,8 +54,6 @@ public class WebConfig {
     @Bean
     SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http
-//                .csrf(x -> x.disable())
-//                .cors(x -> x.disable())
                 .requiresChannel(x -> x.anyRequest().requiresSecure())
                 .sessionManagement(x -> x
                         .invalidSessionUrl("/login?error=true&message=Invalid session")
@@ -88,8 +90,6 @@ public class WebConfig {
 
     @Bean
     AuthenticationProvider totpAuthenticationProvider() {
-        Duration loginDelay = Duration.of(200, ChronoUnit.MILLIS);
-
         DaoAuthenticationProvider authenticationProvider = new TotpAuthenticationProvider(
                 userRepository,
                 totpService,

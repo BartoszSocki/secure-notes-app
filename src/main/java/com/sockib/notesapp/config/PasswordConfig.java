@@ -13,6 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class PasswordConfig {
 
+    // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+    private static final int SALT_LENGTH = 16;
+    private static final int HASH_LENGTH = 32;
+    private static final int PARALLELISM = 1;
+    private static final int MEMORY = 19456; // 19MiB
+    private static final int ITERATIONS = 2;
+
     @Bean
     @Profile({"prod", "!no-password-policy"})
     PasswordStrengthPolicy defaultPasswordPolicy() {
@@ -27,13 +34,6 @@ public class PasswordConfig {
 
     @Bean
     PasswordEncoder passwordEncoder() {
-        // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-        final int SALT_LENGTH = 16;
-        final int HASH_LENGTH = 32;
-        final int PARALLELISM = 1;
-        final int MEMORY = 19456; // 19MiB
-        final int ITERATIONS = 2;
-
         Argon2PasswordEncoder argon2PasswordEncoder = new Argon2PasswordEncoder(
                 SALT_LENGTH,
                 HASH_LENGTH,
