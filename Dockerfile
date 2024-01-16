@@ -4,10 +4,11 @@ WORKDIR /tmp
 
 COPY ./build.gradle ./settings.gradle ./gradlew ./
 COPY ./gradle ./gradle
+COPY ./gradle/wrapper ./gradle/wrapper
 
 COPY src ./src
 
-RUN ./gradlew bootJar -x test
+RUN ./gradlew bootJar
 
 FROM openjdk:19
 WORKDIR /app
