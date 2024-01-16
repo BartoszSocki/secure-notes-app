@@ -2,8 +2,8 @@ FROM gradle:jdk17 AS build
 
 WORKDIR /tmp
 
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
+COPY ./build.gradle ./settings.gradle ./gradlew ./
+COPY ./gradle ./gradle
 
 COPY src ./src
 
