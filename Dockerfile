@@ -1,4 +1,4 @@
-FROM gradle:jdk17-alpine AS build
+FROM gradle:jdk17
 
 WORKDIR /tmp
 
@@ -6,20 +6,14 @@ COPY ./build.gradle ./settings.gradle ./gradlew ./
 COPY ./gradle ./gradle
 COPY ./gradle/wrapper ./gradle/wrapper
 
-COPY src ./src
+COPY ./src ./src
+COPY ./springboot.p12 .
 
-RUN chmod 777 ./gradlew
-RUN ./gradlew bootJar
-
-FROM openjdk:19
-WORKDIR /app
-
-COPY springboot.p12 .
-COPY --from=build /tmp/build/libs/app.jar app.jar
+RUN gradle bootJar
 
 EXPOSE 3443
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/tmp/build/libs/app.jar"]
 
 #FROM openjdk:17-jdk-slim
 #
