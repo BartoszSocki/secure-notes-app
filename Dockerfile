@@ -8,6 +8,7 @@ COPY ./gradle/wrapper ./gradle/wrapper
 
 COPY src ./src
 
+RUN chmod 777 ./gradlew
 RUN ./gradlew bootJar
 
 FROM openjdk:19
